@@ -9,7 +9,7 @@
 %% \documentclass[MACS,english,a4paper,oneside,12pt]{ntnuthesis/ntnuthesis}
 
 %% with the change to using DAIM we have a new option. include DAIM after english below removes the front page material so that you can then submit in the DAIM system. If you are wanting the front material remove DAIM and make sure you fill in the DaimData.tex file.
-\documentclass[MACS,english]{ntnuthesis/ntnuthesis}
+\documentclass[MIS,english]{ntnuthesis/ntnuthesis}
 
 \usepackage[T1]{fontenc}
 \usepackage[utf8]{inputenc}     % For utf8 encoded .tex files allows norwegian characters in the files. This can be dangerous if you change to a differnt editor.
@@ -106,10 +106,10 @@
 
 
 \include{inc/introduction} % includes latex files from the same directory
-\include{inc/packages} % could be called Methodology or methods or any filename 
-\include{inc/structure} % could be results
-\include{inc/implementation}
-\include{inc/discussion}
+\include{inc/related} % could be called Methodology or methods or any filename 
+\include{inc/collection} % could be results
+\include{inc/analysis}
+\include{inc/clustering}
 \include{inc/conclusion}
 
 \ifthenelse{\boolean{HarvardCitations}}{%
@@ -118,7 +118,7 @@
 	\bibliographystyle{ntnuthesis/ntnuthesis} %used for Vancover style references. Numbers - Computer Science & Physics
 }
 
-\bibliography{MastersExample}
+\bibliography{refs}
 
 \appendix
 \include{inc/rawdata}
