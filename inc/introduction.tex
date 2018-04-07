@@ -3,3 +3,8 @@
 
 Bitcoin is a electronic payment system relying on cryptography and a distributed ledger called the blockchain \cite{nakamoto2008}.
 Computational power spent to add transactions to the blockchain maintained on every node; making the transactions irreversible as the blockchain grows and more computational power is used, and thus removes the need for trusted third parties to verify transactions.
+
+The Lightning Network (LN) as described in the paper by Poon and Dryja \cite{poon2015bitcoin} is a payment channel network.
+The payment channels is one of the core elements of the LN, which allow two parties to exchange founds between each other.
+It is inside these that the balance between the two parties in the channel are agreed on and updated.
+The total amount of value in the channels is decided when the channel is created, and distributed to the parties according to the balance when something is published to the blockchain and the channel closes.
