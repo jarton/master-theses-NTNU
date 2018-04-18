@@ -5,39 +5,13 @@
 Bitcoin is a electronic payment system relying on cryptography and a distributed ledger known as a blockchain \cite{nakamoto2008}. 
 It contains all transactions done and is maintained by every node in the network. New transactions is added to the blockchain by spending computational power; making the transactions irreversible as the blockchain grows and more computational power is used, and thus removes the need for trusted third parties to verify transactions. Such a decentralized solution does however not scale well. It can maximally handle about 7 transaction per second \todo{add ref}, compared to visa and other centralized payment systems which can handle ? \todo{ref and numb}.
 A proposed solution to increase the capacity and help scale Bitcoin is payment channel networks. Such a network would allow users to do  transactions without them being published in the Bitcoin network and therefore not included in the blockchain which is why they are known as off-chain transactions. This allows for more transactions being done without increasing the capacity of the Bitcoin system itself. It can be thought of as a layer on top of Bitcoin since it require the Bitcoin system and builds on top of it. As the name implies it consist of networked payment channels. A payment channel is a one to one channel allowing the two participants to exchange founds between each other. A network is created by having multiple channels with different users and allowing for transfers to be done across multiple channels-e.g., Alice can pay Bob without having a channel directly connecting them but using intermediary channels. All transactions done inside this network does not impact the Bitcoin network, however the opening and closing of channels does.
+\\ 
 
 %problem description
-Because the blockchain is authoritative record of transactions done, because of this property it has been analyzed in research projects \todo{themes of projects and refs}. 
-The Lightning Network (LN) as described in the paper by Poon and Dryja \cite{poon2015bitcoin} is a payment channel network currently used with Bitcoin \todo{ref?}. 
+Because the blockchain is a authoritative record of transactions done, it has been used in research projects mainly focusing on anonymity and privacy \cite{reid2013analysis} \cite{meiklejohn2013fistful}. Because the data in the blockchain provides the whole picture of how founds have moved, the focus of earlier research has been to group activity inside the network to users; successfully doing so will provide us a record of all of that users activity, because it is all available in the blockchain but the information needs to be pieced together.
+The Lightning Network (LN) as described in the paper by Poon and Dryja \cite{poon2015bitcoin} is a payment channel network currently used with Bitcoin \todo{ref?}. The use of this second layer network allowing transactions to be done off-chain makes this type of analysis more difficult. Because the lightning network is built on top of Bitcoin there is a need for on-chain transactions which will be recorded on the blockchain, and the data contained there will always be valid, but founds can move inside this second network which will not be observable on the blockchain in the same degree as previously. Jordi Herrera-Joancomartí and Cristina Pérez-Solà \cite{herrera2015research} state that the methods used for blockchain analysis in earlier research is no longer effective if payment channel networks would be widely used. Then the majority of transaction would be done off-chain and only the on-chain transactions required for the payment channel to operate would be on-chain. Giulio Malavolta et al. \cite{malavolta2017concurrency} identifies some possible privacy implications of the on-chain payment network transactions, so there might be possibilities of using blockchain data to analyze privacy. Now that there are functioning payment channel networks such as the Lightning network we can explore what information the on-chain transactions from this network will provide not just in a theoretical manner but the impact of user behaviour and larger data sets. This paper will explore the possibility of blockchain analysis in relation to the lightning network, and to what degree it can impact privacy of the users. Doing this while the technology is still in a developmental stage and not yet widely used can be important as resolving potential privacy risks early is desirable.
+\\
 
-%old
-The degree of anonymity and privacy users can expect when doing Bitcoin transactions are known from research conducted in recent years.
-However, when these transactions are done in the LN, and therefore outside the Bitcoin network there is no longer a clear answer. Since many of these transactions are done off-chain they do not get recorded on the blockchain ledger. This means that we no longer can use the blockchain as a authoritative record containing information on all transactions done. Many of the transaction that used to only be done within the Bitcoin network will now be done in another network entirely. Inside the LN where these transactions are done, people can also transfer founds via intermediaries, which makes it even harder to see the bigger picture of how founds are moving.
-Intuitively these off-chain transactions seems to increase anonymity and privacy for the users.
-But the details of how this technology effects anonymity and privacy are unknown.
-
-% justification, method 
-
-%old
-Many see payment channel networks allowing users to do off-chain transactions as the solution to the scaling issues facing Bitcoin.
-But for these solutions to be accepted, the technology and design must be proved to be sound from a security and privacy standpoint. 
-In a recent paper on Concurrency and privacy with regards to payment channel networks they also voice this concern \cite{malavolta2017concurrency}. The authors have not found any any comprehensive analysis on privacy, or any analysis that identifies desirable privacy aspects for these types of networks. For the lightning network which is the most prominent example of such a network, it is desirable to resolve potential security and privacy issues while its still under development and few are using it. 
-
-
-% goals and questions
-
-
-%old
-The notion of anonymity should be well defined, and clear definitions should be established to base the rest of the work on.
-Therefore, what are the relevant privacy and anonymity notions in the context of off-chain transactions?
-
-One important aspect of analyzing anonymity in networks such as the LN is determining how the privacy offered by Bitcoin affects the users of the LN. With the blockchain containing a wealth of information can have a large impact on privacy in the LN. What information about the LN and its users can be revealed through data in the blockchain? 
-
-As with other networks the LN will have nodes exchanging data between each other. Therefore, information decreasing anonymity can potentially be found by connecting to the LN the nodes in the network. So, how is privacy and anonymity handled internally in the LN?
-
-We are looking at the problem from two directions: how the LN operates, and the implications of its interaction with the Bitcoin system. When doing this we hopefully get a overall picture of the problem. And we can therefore answer: 
-what are the privacy implications of using the LN?
-
-The thesis will find what relevant information is available in the Bitcoin and LN systems, and its impact on anonymity.
-Additionally, the methods used to find the information will be outlined, and also how the information is used to assess anonymity.
-This will provide a general overview of the anonymity and privacy implications of the Lightning Network.
+The goal of this paper will be to create a method for identifying transactions related to the lightning network and discover what information we can gather by doing so. We will also try to use this information to get more information not explicitly contained in the transactions, which can reveal potential privacy issues. 
+% maybe section on how anonymity is handled within ln??
+The relevance of methods used in previous research projects \cite{reid2013analysis} \cite{meiklejohn2013fistful} will be explored and how they could potentially be adapted to this new task. Additionally we will identify privacy notions relevant to this domain.
