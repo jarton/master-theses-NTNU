@@ -2,9 +2,10 @@
 \label{chap:results}
 
 In this chapter we will present our results from analyzing the data in the blockchain using the methods described in \cref{chap:metodology}. 
-Bitcoin has a testnet used for development and testing of experimental functionality, which the LN have been tested on for longer than it has been used on the mainnet. We have used both the testnet and the mainnet in the project; our reasoning for this is the LN on the testnet is larger, and people are testing a wide array of use cases, and functionality using testnet coins without any value; on the mainnet users have Bitcoin with value, perhaps resulting in more realistic user behaviour which could impacts the data generated.
-By using both Bitcoin networks we will have one with more edge cases and more data, and one containing data more accurately reflecting normal user behaviour.
-The testnet has its own blockchain which is publicly available in the same manner as the mainnet blockchian. Collecting data from the LN as discussed in \cref{sec:ln_analysis} was done in two intervals of one week each. Creating a snapshot of the network on each block for a week results in about 1000 blocks worth of data. This should be sufficient to verify our methods of identifying relevant LN transactions, and doing this twice allowed us to make adjustments after the results of the first interval. 
+Bitcoin has a testnet used for development and testing of experimental functionality, which the LN have been tested on for longer than it has been used on the mainnet. We have used both the testnet and the mainnet in the project; our reasoning for this is the LN on the testnet is larger, and people are testing a wide array of use cases and functionality, using testnet coins without any value; on the mainnet users have Bitcoin with value, perhaps resulting in more realistic user behaviour which could impacts the data generated.
+By using both Bitcoin networks we will have both edge cases and cases accurately reflecting normal user behaviour.
+The testnet has its own blockchain which is publicly available in the same manner as the mainnet blockchian. Collecting data from the LN as discussed in \cref{sec:ln_analysis} was done in two intervals of one week each.
+Creating a snapshot of the LN state on each block for a week results in around 1000 blocks worth of data. This should be sufficient to verify our methods of identifying relevant LN transactions, and doing this twice allowed us to make adjustments after the results of the first interval. 
 
 \section{Method verification with LN data}
 
@@ -21,28 +22,36 @@ As we stated previously a LN channel uses the P2WSH 2of2 multisig type for the o
       \alpha \subseteq \gamma, \hspace{10pt} \beta \subseteq \gamma, \hspace{10pt} \beta \subseteq \alpha  
 \end{equation}
 
-The two first relations is explained above and is always true for the systems in its current case. The last relation however, will not hold with our data, but ideally it should be true. For this to be the case our method with timelocked redeem scripts for identifying channels should not have any false positives-i.e., identify channels which is unrelated to the LN. Additionally we should also be able to discover all closed channels from the LN during the interval, meaning we would get the complete set of channels-i.e., \( \gamma \) contain all LN channels closed in the interval. While the timelocked scripts are very unique and therefore good for identifying channels, and theoretically one could get all LN channels by connection to the LN, this would only be true in a ideal world scenario. So as we will see with our data \( \beta \not\subseteq \alpha \), but keeping the relation in mind will be useful when analyzing the data.
+The two first relations is explained above and is always true for the systems in its current case. The last relation however, will not hold with our data, but ideally it should be true. For this to be the case our method with timelocked redeem scripts for identifying channels should not have any false positives-i.e., identify channels which is unrelated to the LN. Additionally we should also be able to discover all closed channels in our interaction with the LN during the interval, meaning we would get the complete set of channels-i.e., \( \gamma \) contain all LN channels closed in the interval. While the timelocked scripts are very unique and therefore good for identifying channels, and theoretically one could get all LN channels by connection to the LN, this would only be true in a ideal world scenario. So as we will see with our data \( \beta \not\subseteq \alpha \), but keeping the relation in mind will be useful when analyzing the data.
 
 \subsection{First Interval}
 
-\begin{figure}[h]
+\begin{figure}[ht]
     \centering
     \includegraphics[width=16cm]{figures/graphs/venn_full1.png}
     \caption{Venn diagram of channel sets in interval one}
     \label{fig:venn_run1}
 \end{figure}
 
-The first collection interval on the mainnet had a length of 1151 blocks, found between block 517855 and 519005. Our modified LND implementation described in \cref{sec:ln_analysis} collected data from the LN and produced the set $\alpha$ containing 713 channels which where closed during this interval. The same interval on the blockchain was parsed two times, once identifying channels using timelocked redeem scripts, and a second time getting all potential channels using multisig identification. This resulted in a $\beta$ set containing 325 channels and a $\gamma$ set with 1270 channels shown on the left in \cref{fig:venn_run1} as a venn diagram. We can see how both $\beta$ and $\alpha$ is a subset of $\gamma$, but $\beta \not\subseteq \alpha$. The intersection $\beta \cap \alpha$ is the number of channels we identified using the timelocked method which was also found trough the LN node. On the mainnet this intersection was 188 which is 26.37\% of total channels in $\alpha$. This is reasonable as the method will only discover a channel if it has been unilaterally closed as we explained in \cref{sec:bc_analysis} and not if a channel is closed cooperatively which likely will happen more frequently. Taking the ideal world scenario $\beta \subseteq \alpha$ discussed above into account for this data, we have a large $\beta \backslash{} \alpha$ relative compliment of $\alpha$ in $\beta$ of 137, which is 42.15\% of the channels in $\beta$. Having a false positive this high is very unlikely because the uniqueness of the timelocked redeem scripts, so we made the assumption that these are actually LN channels which we have not been able to capture in our interaction with the LN. \todo{add for interval 2 more peers, and graph pruning theory}
-Assuming the union $\alpha \cup \beta$ are all LN channels, the total number of LN channels closed in this interval would be 850. In turn this would entail that 66.93\% of 2of2 multisig transactions in our interval is lightning channels. For the testnet data this the percentage would be slightly lower with 47.48\%.
-This is however not a upper limit as our $\alpha \cup \beta$ union is only channels unilaterally closed on the blockchain and channels that have been propagated to our node in the LN. If the notion that the relative compliment $\beta \backslash{} \alpha$ is unilaterally closed channels, which we have not been able to collect trough the LN, there should also be channels not closed unilaterally and therefore not discovered on the blockchain, which we similarly have not been able to collect trough the LN. 
-Which would make the total channel count higher, and more of the 2of2 multisig transactions being channels, than is indicted in our data.
+The first collection interval on the mainnet had a length of 1151 blocks, found between block 517855 and 519005. Our modified LND implementation described in \cref{sec:ln_analysis} collected data from the LN and produced the set $\alpha$ containing 715 channels which were closed during this interval. The same interval on the blockchain was parsed two times, once identifying channels using timelocked redeem scripts, and a second time getting all potential channels using multisig identification. This resulted in a $\beta$ set containing 328 channels and a $\gamma$ set with 1271 channels shown on the left in \cref{fig:venn_run1} as a venn diagram. We can see how both $\beta$ and $\alpha$ is a subset of $\gamma$, but $\beta \not\subseteq \alpha$. The intersection $\beta \cap \alpha$ is the number of channels we identified using the timelocked redeem script which where also found trough the LN node. On the mainnet this intersection was 190 which is 36\% of the total channels in $\alpha$. This is reasonable, as the method will only discover a channel if it has been unilaterally closed as we explained in \cref{sec:bc_analysis}, and not if a channel is closed cooperatively which likely will happen more frequently. Taking the ideal world scenario $\beta \subseteq \alpha$ discussed above, into account for this data, we have a large $\beta \backslash{} \alpha$ relative compliment of $\alpha$ in $\beta$ of 138, which is 42\% of the channels in $\beta$. Having a false positive this high is very unlikely because the uniqueness of the timelocked redeem scripts, so we made the assumption that these are actually LN channels which we have not been able to capture in our interaction with the LN. The reason we made this assumption was that it is more likely that not every channel is propagated successfully to our single LN node, than there being instances of timelocked redeem scripts unrelated to the LN on the blockchain. Addiontally, as we explained in \cref{sec:ln_analysis} at least every node running the LND implementation will prune their LN graph of "zombie" channels regularly, so these will eventually no longer be propagated trough the network. This means even if our node does not prune its graph of the network, the channel will never be received in the first place. These are the likely causes of our timelocked channels not being found in the LN channel set.
+Taking this into account and assuming the union $\alpha \cup \beta$ are all LN channels, the total number of LN channels closed in this interval would be 853. This would entail that 67\% of 2of2 multisig transactions in our interval is lightning channels. 
+\\
+
+For the testnet our LND node collected 838 snapshots starting on block 1290011 and ending on block 1289174. The results are very similar to the mainnet, with the intersection $\beta \cap \alpha$ being 27\% of $\alpah$,
+and the $\beta \backslash{} \alpha$ relative compliment of $\alpha$ in $\beta$ being 63\% of channels in $\beta$.
+Again, assuming the union $\alpha \cup \beta$ are all LN channels, 55\% of 2of2 multisig transactions is lightning channels. This is however not a upper limit, as our $\alpha \cup \beta$ union is the channels unilaterally closed on the blockchain and channels that have been propagated to our node in the LN. As we discussed our LN node might not be able to get all channels, so there should also be channels not closed unilaterally and therefore not discovered on the blockchain, which we similarly have not been able to collect trough the LN. 
+Which would make the total channel count higher, and more of the 2of2 multisig transactions being channels, than is indicted in our results for both the networks.
 
 \subsection{Second Interval}
 
-\begin{figure}[h]
+
+For our second interval we only collected data from the mainnet, but tweaking the collection slightly compared to interval one. Instead of only peering with the one assigned when starting the node software we added more, up to a total of 10 peers for the duration of the interval. We also ran the node for a few days before starting the collection, so the node would have opportunity to synchronize as much as possible, and perhaps get channels that would have been pruned in that timeframe and not announced to the node at a later time. A total of 1151 snapshots of the LN was created, giving $\alpha$ 446 closed channels. The timelocked identification on the blockchain found  177 channels for $\beta$, while the multisig identification resulted in 676 channels for $\gamma$. For this interval the the intersection $\beta \cap \alpha$ was 26\% of $\alpha$, which is similar to the first interval, with 36\% and 27\% for the mainnet and testnet respectively. However, the $\beta \backslash{} \alpha$ relative compliment of $\alpha$ in $\beta$, was 34\% of channels in $\beta$, compared to 42\% and 63\%. Also, the union $\alpha \cup \beta$ all being LN channels, would entail 75\% of the 2of2 multisig transactions are lightning channels. This would indicate we have been able to collect more channels from the LN, which the size of $\apha$ compared to $\gamma$ also shows: in this interval $\alpha$ is 66\% of $\gamma$, while in the first interval this were between 55-56\% for both networks. This supports our suggestion made in the previous subsection about there being a number of channels which we are unable to collect trough the LN, but ensuring that the collection node can synchronize as much as possible is important.
+This also means that than 75\% of 2of2 multisig transaction are likely LN channels. 
+
+\begin{figure}[ht]
     \centering
-    \includegraphics[width=16cm]{figures/graphs/venn_full1.png}
-    \caption{Venn diagram of channel sets in interval one}
+    \includegraphics[width=10cm]{figures/graphs/ven_run2.png}
+    \caption{Venn diagram of channel sets during interval two}
     \label{fig:venn_run2}
 \end{figure}
 
@@ -80,20 +89,20 @@ We did the same for the testnet data which resulted in a coeficient of 0.45 whic
 Using our software and the timelocked redeem scripts method for identifying channels we have parsed the blockchain on both mainnet and the testnet to the point before any P2WSH transactions and therefore channels. The result of this is data about every unilaterally closed channel that has existed. Statistics about the channels we identified can be found in \cref{subgraph_stats}. This include the number of channels fund and stats about their value and lifetime. The value of the channels is given in satoshis, with 100,000,000 satoshis being one Bitcoin. The One clear difference between the mainnet and testnet is the value used for each channel, as we briefly mentioned before coins on the testnet has no value to people, so it would be natural that they are more liberal when creating channels. 
 \\
 
-\begin{table}[]
+\begin{table}[ht]
 \centering
 \caption{Value and lifetime for channels}
 \label{subgraph_stats}
 \begin{tabular}{|l|c|c|c|c|}
 \hline
                                              & \textbf{Mainnet} & \textbf{LN Mainnet}& \textbf{Testnet} & \textbf{LN testnet} \\ \hline
-\textbf{Sample size (channels)}                & 3 778            & 3 400           & 7 755               & 251            \\ \hline
-\textbf{Average Channel value}               & 412 647          & 412 647         & 7 000 458            &7 758 942       \\ \hline
-\textbf{Median channel value}                & 100 000          & 100 000         & 5 000 000            & 5 000 000        \\ \hline
-\textbf{Standard Deviation Channel value}    & 1 296 102        & 1 296 102       & 7 096 572            & 7 191 958        \\ \hline
-\textbf{Average channel lifetime}            & 1 438            & 1 438           & 2 282                & 1 269            \\ \hline
-\textbf{Median channel lifetime}             & 602              & 602             & 396                  & 312              \\ \hline
-\textbf{Standard Deviation channel lifetime} & 2 017            & 2 017           & 5 545                & 4 059            \\ \hline
+\textbf{Sample size (channels)}              & 3877             & 715           & 7 755               & 251            \\ \hline
+\textbf{Average Channel value}               & 434 056          & 233 750         & 7 000 458            &7 758 942       \\ \hline
+\textbf{Median channel value}                & 100 000          & 50 000         & 5 000 000            & 6 000 000        \\ \hline
+\textbf{Standard Deviation Channel value}    & 1 372 703        & 586 706       & 7 096 572            & 7 191 958        \\ \hline
+\textbf{Average channel lifetime}            & 1 574            & 1 940           & 2 282                & 1 269            \\ \hline
+\textbf{Median channel lifetime}             & 654              & 1 836             & 396                  & 312              \\ \hline
+\textbf{Standard Deviation channel lifetime} & 2 173            & 1 791           & 5 545                & 4 059            \\ \hline
 \end{tabular}
 \end{table}
 
@@ -131,9 +140,9 @@ The linking was done, both on the set of channel graphs found during the LN coll
 \begin{tabular}{|l|c|c|}
 \hline
                                                    & \textbf{Mainnet} & \textbf{Testnet} \\ \hline
-\textbf{Unique Keys found}                         & 26270          & 47182            \\ \hline
-\textbf{Unique keys reused}                        & 1471               & 3407             \\ \hline
-\textbf{Instances of key reuse}                    & 3062             & 7565             \\ \hline
+\textbf{Unique Keys found}                         & 26989              & 47182            \\ \hline
+\textbf{Unique keys reused}                        & 1511               & 3407             \\ \hline
+\textbf{Instances of key reuse}                    & 3144             & 7565             \\ \hline
 \textbf{Maximum number of reuses for a single key} & 23               & 171              \\ \hline
 \textbf{Average reuse of keys}                     & 2              & 2.2              \\ \hline
 \end{tabular}
@@ -148,11 +157,11 @@ We also used the two other heuristics on the channel sets, finding how many chan
 \begin{tabular}{|l|c|c|}
 \hline
                                        & \textbf{Mainnet} & \textbf{Testnet} \\ \hline
-\textbf{Total relations found}       & 1620            & 5628             \\ \hline
-\textbf{Founding output relations}   & 975               & 2828             \\ \hline
+\textbf{Total relations found}       & 1670            & 5628             \\ \hline
+\textbf{Founding output relations}   & 996               & 2828             \\ \hline
 \textbf{Closing output relations}    & 30              & 2                \\ \hline
-\textbf{Timelocked output realtions} & 422               & 1439             \\ \hline
-\textbf{Graph overlap relations}     & 193               & 1359             \\ \hline
+\textbf{Timelocked output realtions} & 444               & 1439             \\ \hline
+\textbf{Graph overlap relations}     & 200               & 1359             \\ \hline
 \end{tabular}
 \end{table}
 

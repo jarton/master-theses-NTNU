@@ -2,37 +2,104 @@
 \label{chap:metodology}
 
 %goal 
-To meet our goal for this project as outlined in~\cref{chap:introduction} we must create a method for identifying LN relevant transactions on the blockchain, so we can discover what information is available in those transactions. In \cref{sec:background} we covered how the LN uses the blockchain to operate with certain on-chain transactions. This means the relevant on-chain LN transactions we are interested in is the ones used to open, close, or claim founds related to a channel. Because we are interested in what we can learn about the LN and its users from analyzing the blockchain, we will not utilize the information in non LN relevant transactions in this project. Reason behind this is the size of the blockchain as discussed in \cref{sec:related}, which means the requirements for both software and hardware will be high if all information in the blockchian should be kept track for parsing. The benefits of taking all information into consideration for a similar type of project is discussed in \cref{sec:future} on future work. 
+To meet our goal for this project as outlined in~\cref{chap:introduction} we must create a method for identifying LN relevant transactions on the blockchain, so we can discover what information is available in those transactions. In \cref{sec:background} we covered how the LN uses the blockchain to operate with certain on-chain transactions. This means we will have on-chain LN transactions used to open, close, or claim founds related to a channel. As we are interested in what we can learn about the LN and its users from analyzing the blockchain, we will not utilize the information in non LN relevant transactions in this project. Reason for this is the size of the blockchain as discussed in \cref{sec:related}, which means the requirements for both software and hardware will be high if all information in the blockchian should be kept track of when parsing it. Potential benefits of using information from all transactions, LN related or not, will be discussed in \cref{sec:future} on future work. 
 \\
 
 %blockchain vs ln
-With the LN being layered on top of Bitcoin, it requires the Bitcoin system to work while the opposite is not the case. The LN will also be aware of the state of the Bitcoin system, as it uses the Blockchian to operate the channels. The Bitcoin system on the other hand is unaware of the LN and does not distinguish between on-chain LN transaction and other transactions. This means that when we use the Blockchian in the Bitcoin system as the source of data, it will contain little information about the LN and without context, compared to using the LN and view the system from there. However, the LN is a dynamic changing network of nodes, channels, and payments; which is not stored in any public ledger like the blockchain. The information found in the LN can be recorded and stored by participants but the system itself does not keep such a record. The data in the blockchain can be verified by any user as explained in \cref{subsec:blockchain} while data recorded from the LN could not be verified in the same manner on its own.
-This means that if we want verifiable historical data about the LN we should look in the blockchain. It will have limited and less information than what can be found in the LN, but will have the properties of being verified and automatically recorded by the system.
-While our approach is the blockchain we can also use the fact that there is more information available by connecting to the LN and record data. Collecting data from the LN will allow us compare it with what we find on the blockchain. Doing this comparison we can verify our method for identifying LN relevant transactions on the blockchain, and indicate how much of the total information is available on the Blockchain.
+With the LN being layered on top of Bitcoin, it requires the Bitcoin system to work, while the opposite is not the case. The LN will also be aware of the state of the Bitcoin system, as it uses the Blockchian to operate the channels. The Bitcoin system on the other hand is unaware of the LN and does not distinguish between on-chain LN transaction and other transactions. This means that when we use the Bitcoin Blockchian as the source of LN data, the amount of data will be smaller and not found in any LN context, compared to using the LN directly and collecting data from there. However, the LN is a dynamic changing network of nodes, channels, and payments; which is not stored in any public ledger like the blockchain. The information found in the LN can be recorded and stored by participants, but the system itself does not keep such a record. The data in the blockchain can be verified by any user as explained in \cref{subsec:blockchain} while data recorded from the LN could not be verified in the same manner on its own.
+This means that if we want verifiable historical data about the LN or verify data collected from the LN, we must look to the blockchain. It will have limited and less information than what can be found in the LN, but will have the properties of being verified and automatically recorded by the Bitcoin system.
+While the Blockchain is the approach used in project, we will have benefits from using the fact that there is more information available by connecting to the LN and record data. Collecting data from the LN will allow us compare it with what we find on the blockchain. Doing this comparison we can verify and quantify the effectiveness of our method for identifying LN relevant transactions on the blockchain. Comparing the blockchain and LN data can also give us the information which unable in trough the blockchain, or to what extent something is available in the blockchain.  
 \\
 
-\section{Blockchain analysis}
-\label{sec:bc_analysis}
 
-\subsection{Main identification method using timelocked outputs}
-\label{timelocked_identification}
+\section{Blockchain analysis}
+\label{blockchain_analysis}
 %subgraphs representing channels
-The transactions in the blockchain is linked with outputs - inputs forming a DAG as we explained in \cref{subsec:transactions}. Parsing the blockchain involves linking these transactions to form this transaction graph, allowing each transaction can be seen in context with every other. When applying the heuristics used by previous works discussed in \cref{sec:background}, one can use the results of this to provide additional context to the graph-i.e., when users are defined by key sets, it will remove the pseudonymous properties of using new keys for each transaction, and thus reveal user activity. Because we are interested in transactions related to the LN, we do not create a complete transaction graph containing all transactions on the blockchian; instead we only link transactions related to a single LN channel, which creates many small transactions graphs, each representing LN a channel, and each a subgraph of the complete transaction graph. 
-We will refer to these graphs as channel graphs because they contain all on-chain transactions related to a LN channel.
-By only creating the channel graphs and not a complete transaction graph, we do not need keep track as much data during parsing of the blockchain. 
-In \cref{fig:ln_tx_graph} we can see the types of transactions found within a channel graph for a unilaterally closed channel. 
-We have the two main transactions present in all types of channel graphs, which is the founding and closing transaction, but we also have what we call the timelocked transaction, which spends the timelocked output in the case of a channel being unilatirally closed.
+The transactions in the blockchain is linked with outputs - inputs forming a DAG as we explained in \cref{subsec:transactions}. Parsing the blockchain involves linking these transactions to form this transaction graph, allowing each transaction to be seen in context with every other. When applying the heuristics used by previous works discussed in \cref{sec:background}, one can use the results of this to provide additional context to the graph-i.e., when users are defined by key sets, the pseudonymous properties of using new keys for each transaction is removed, and so user activity is revealed. Because we are interested in transactions related to the LN, we do not create a complete transaction graph containing all transactions on the blockchain; instead we only link transactions related to a single LN channel, which creates many small transactions graphs, each representing LN a channel, and each a sub graph of the complete transaction graph. 
+We will refer to these graphs as channel graphs because they contain the most common on-chain transactions related to a LN channel.
+By only creating channel graphs and not the complete transaction graph, we do not need keep track as much data during parsing of the blockchain, which makes our task of analyzing the blockchain easier. 
+In our project we use two methods for locating possible channel graphs: using timelocked redeem script, and using 2of2 multisig redeem scripts.
+They are different, as the multisig method will get all potential channels, but will also give false positives, while the timelocked method is reliable in terms of identification, but will not be able to identify as many channels.
+Our focus has been on the timelocked method as because of the reliability, but multisig detection has also played a role.
+
+
+\subsection{Using 2of2 Multisig for identification}
+\label{detection_ms}
+
+%identifying, craeting graphs
+Channel graphs created using this method will contain the founding and closing transactions as shown in \cref{fig:ln_tx_graph_small}.
+This will be the case for all types of channel graphs, as it is these transactions that represents a channel on-chain.
+To create the channel graphs when parsing the blockchain, we must be able to differentiate between on-chain LN transactions and other Bitcoin transactions. Therefore we must find some characteristics needed or only found in on-chain LN transactions. 
+In \cref{fig:ln_tx_graph} we can see some characteristics found in the founding and closing transactions.
+The output in the founding transaction used for the channel must be P2WSH, and the closing transaction will always have one input which will be a 2of2 multisig redeem script as explained in \cref{subsec:pcln}. The different characteristics have different levels of uniqueness, but using more unique characteristics will limit scope, meaning there is always a trade-off between specificity and broadness for identification. An example of this is the P2WSH output type, which is not very unique, so it will provide many false positives, but will allow for detection of both closed and open channels, which we will discuss more in \cref{subsec:information_ln}. 
+The 2of2 redeem scripts on the other hand is more unique, as they are a specific redeem script and must therefore also belong to a P2WSH output - input pair. In the founding transaction we will only be able to check if it has any P2WSH outputs, while the closing transaction will allow us to check for the 2of2 multisig which also entails P2WSH, and check if there is only one input. We are however limited to closed channels, but the transactions matching our characteristics are more likely to be LN related. While the 2of2 multisig reedem script will be present in all closing transactions for LN channels, they can also be used for other purposes. Therefore we cannot use this to determine if a transaction is a closing transaction or not, but we can rule out all transactions without this characteristic. Locating all transactions having inputs with such redeem scripts will provide us with all potential closing channels, and by following the input - output connection we can also locate the founding transaction, providing us with a channel graph with the transactions as shown in \cref{fig:ln_tx_graph_small}.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=10cm]{figures/ln_tx_graph_small.png}
+    \caption{Channel graph with founding and closing transactions}
+    \label{fig:ln_tx_graph_small}
+\end{figure}
+
+Creating channel graphs as explained above, identifies the transactions in the channel graph in reverse in relation to their creation order-i.e., we identify the closing transaction first, and use it to find the founding transaction. As stated before the transactions form a DAG, meaning they will be located chronologically in the blockchain, with newer transaction being found towards the tip of the chain. For the transactions in our channel graphs this entails that the closing transactions will located before the founding transaction, as the closing uses the output of the founding.
+We must therefore parse the blockchain in reverse, beginning with the most recent block, and working towards the genesis (first) block.
+This will ensure that we encounter the transactions in the order we want-i.e., closing transaction before the founding.
+As explained in \cref{subsec:blockchain} a block in the blockchain contains the hash of the previous block, which creates the chain connecting the blocks. This provides a way of easily parsing the blocks and therefore also the transactions in the desired order. 
+\\
+
+The software we have developed for this project parses the blockchain and identifies relevant transactions, using both the multisig and timelocked identification methods.
+We use the btcd \cite{btcd_roasbeef} Bitcoin implementation written in Go, for fetching and storing the blockchain data, and we also use its libraries to read the data in our software.
+At a high level our software finds the latest block from the blockchain stored on disk and uses it as a starting point;
+it then iterates over the transactions in the block, and checks if they are relevant for our project-i.e., is part of a channel graph. If that is the case they are stored for later use. After all transactions in a block is parsed, the hash of the preceding block is used to fetch it from the disk, and the same process is repeated.
+For each transaction it parses, it checks if the inputs have a 2of2 redeem script, if that is the case a channel graph is created and the transaction is stored as a closing transaction. As explained in \cref{subsec:segwit} each transaction has a id, which is the transaction hash. Transaction inputs references the hash of the transaction containing the output they spend, so when finding a potential closing transaction we get the hash of the corresponding founding transaction.
+
+
+The main algorithm used in our software for parsing the blockchain and crating channel graphs is shown in \cref{fig:algo}. It uses the method described above, where timelocked transactions is identified using redeem scripts, and then transaction hashes of inputs was used to find the rest of the graph.
+
+The algorithm checks each transaction if it is a timelocked transaction, if so we store it as the end of a channel graph. In addition we store the hash of the preceding transaction, which would be the closing/commitment transaction. As we parse transactions and identify more timelocked transactions, we are creating a list of hashes known to be closing/commitment transaction. Therefore, for each transaction we check which does turn out not to be a timelocked one, we instead check if its hash matches any in this list-i.e., if it is a closing/commitment transaction. If it matches we store it within its graph, and then get the hash of the preceding transaction, in this case the founding transaction, and store it in a similar list. 
+Transactions is checked against this list if a transaction is neither a timelocked or closing/commitment transaction.
+If a match is found in this last list a founding transaction is identified and we have a complete channel graph. 
+The hash lists used to find all other transactions besides the timelocked, are for each transaction checked in the reverse order, meaning we check the hash list containing closing transactions before we check founding transactions. Even while doing this we had to implement mechanisms for dealing with out of order transactions. As stated before, the inclusion of transactions in blocks naturally orders them, because 
+transactions added in new blocks must have inputs from transactions already in the blockchain. However, transactions pairs where one spends another can be confirmed at the same time, meaning they are included in the same block.
+This occurs because the creator of the latest transaction spending a unconfirmed transaction-i.e., a transaction that has not yet been accepted as part of the shared transaction history of the network. 
+Transactions are not necessarily ordered within blocks, so if two sequential transactions are located in the same block, we might encounter the latter transaction first. This means we might encounter the founding transaction before the closing, but since we have not yet found the closing transaction and thus did not know the hash of the founding we could not yet recognize it. Because if this we had to iterate over the transactions in the block a second time if we found any closing transactions, to make sure we did not miss the founding transaction.
+Even with parsing some blocks twice the software parsed blocks fairly quick. The memory requirements where also low as it only had to keep track of the hash lists for transactions we where currently looking for, and the already found transactions stored in their respective channels. 
+
+The 
+We have also implemented identification of possible closing transactions by using the P2WSH 2of2 multisig properties; everything except the initial identification being done with 2ofo2 multisig redeem scripts, instead of timelocked redeem script is the same as the general method discussed in \cref{timelocked_identification}.
+
+
+
+ When using these properties to attempt to identify channels, we will get a set containing all LN related transction, but it will also have transactions which are unrelated. The effectiveness of this method will be determined on how many of the transactions are related compared to the amount that is not. This again will depend on the current use-cases for 2of2 multisig transactions besides on-chain LN transactions, and how widely these are used. To determine the current effectiveness of this method, we will compare data from the blockchain with data gathered through the LN, which we will discuss in more detail in \cref{sec:ln_analysis}. 
+ The redeem script located in the closing transaction will contain the properties used to identify possible candidates, so again, we will only be able to identify closed channels.
+ 
+ 
+ 
+ 
+Below is the 2of2 multisig redeem script format, and a example of such a script in bytes:
+\\
+
+2 <public key 1> <public key 2> 2 OP\_CHECKMULTISIG
+\\
+
+\noindent [82 33 2 211 153 245 240 225 125 95 140 116 20 99 81 38 139 135 136 59 14 125 34 181 148 47 67 16 42 24 147 28 144 61 33 33 2 215 1 70 141 233 112 91 253 252 202 27 73 158 254 234 159 125 98 30 78 159 235 6 46 167 103 105 239 180 125 168 66 82 174]
+\\
+
+In \cref{subsec:scripts} we used multisig scripts as an example of redeem scripts used in pay to script hash transactions. They are compared to the redeem scripts used in timelocked transactions quite simple, consisting only of two numbers denoting the required and total number of keys that can be used to sign, the public keys themselves, and the checkmultisig operation. As shown above we start with the required number of keys which must be used for signing, in this case 2, being 82 in the byte version. Then we have the first public key required to spend the output, in the same compressed format as in the timelocked script with a length of 33 bytes, starting with the prefix of either 2 or 3. Then we have the other public key in the same format, followed by the 2 or 82 in byte format telling us the total number of keys which can be used for signing. At the end we have the opcode 174 OP\_CHECKMULTISIG, which checks signatures against the public keys. To identify this type of script we check if the opcodes are present at their expected locations in the script, and the total length of the script. As mentioned channels closed co-operativly will not have the timelocked transaction, so when we use this method to identify possible LN channels on the blockchian, the channel graphs created will be smaller.
+\\
+
+
+
+\subsection{Identification using timelocked outputs}
+\label{timelocked_identification}
+
+We have the two main transactions present in all types of channel graphs, which is the founding and closing transaction, but we also have what we call the timelocked transaction, which spends the timelocked output in the case of a channel being unilaterally closed.
 This occurs when one party publishes a commitment transaction, which spends the channels founding output and thus closes the channel, meaning the commitment transaction also becomes the closing transaction. As explained in section \cref{subsec:pcln} the one who publishes a commitment transaction will have a timelock on their output from the commitment transaction. This is to enable punishment for the publisher in the case of the commitment in question was a revoked one, containing outdated balance favoring the publisher more than the most recent commitment. 
 The timelocked transactioin shown in \cref{fig:ln_tx_graph} is the transaction spending this timelocked output, so it will not be present if there is no timelocked output, which is the case for cooperatively closed channels.
 \\
 
-%identifying, craeting subgraphs
-To create the channel graphs we must differentiate between on-chain LN transactions and other Bitcoin transactions,
-so for locating LN relevant transaction on the blockchain, we identified several attributes required in the transactions shown in \cref{fig:ln_tx_graph}. 
-In the two main transactions which is the founding/opening and closing transaction we find the output - input pair which facilities the channel. The founding transaction contains the output creating the channel, and the closing transaction will have the input closing the channel. This output - input pair will be of the type P2WSH 2of2 multisig as we explained in \cref{subsec:pcln}. 
-While this will be the case for all output - input pairs used for channel opening and closing, it will not be sufficient to determine with certainty if a transaction is related to the LN or not, because P2WSH 2of2 multisig transactions can be used for other purposes. As we explained in \cref{subsec:scripts} the P2SH (non segwit version of P2WSH) type will only have the hash of the script in the output, while the redeem script itself is included in the input of the transaction spending that output. This means that if we only consider a founding transaction output, we will only be able to tell that the output is a P2WSH type. If we on the other hand only consider the closing transaction, the input will be able to tell us that the output was a P2WSH type and that the redeem script is a 2of2 multsiig script.
-Because both of these properties must be present in a LN channel output - input pair, a closing transaction is will enable us to check if the input - output has both of these. Again, these two properties does not guarantee that the input - output is a LN channel, but we can differentiate between possible candidates and transactions that is guaranteed to be unrelated. These candidates can also have different degrees of certainty to be LN related, based on the number of properties we can determine. In practice this means that we will have better success if we try to identify channels by locating potential closing transactions instead of founding transactions, as more distinct properties can be found in the former-i.e., both 2of2 mutlisig and P2WSH, instead of just P2WSH. In this project we have investigated the effectiveness of using the different types of properties, which will be discussed later.
-\\
+
+
 
 \begin{figure}[h]
     \centering
@@ -121,25 +188,8 @@ Next vector is 117 which is the OP\_DROP operation, and after we find the <local
 To identify this type of redeem script in timelocked transactions we check if the opcodes can be found at the expected locations. E.g., index 0 of the script should be 99 for the OP\_IF, 103 for the OP\_ELSE operation should be at index 35, allowing space for a public key between it and the OP\_IF operation. Each opcode contained in these type of scripts is used for recognition, meaning all opcodes covered here must be present in the script for it to be identified as a timelocked redeem script, and they must be found at their expected location relative to the others.
 \\
 
-
-\subsection{Finding channels using P2WSH 2of2 Multisig}
-\label{detection_ms}
-
-The timelocked redeem scripts used to identify unilaterally closed channels are very unique compared to other scripts commonly used, so when we find such scripts we can safely assume that the transaction is related to the LN. However, as mentioned all channels cooperatively closed will not have a timelocked output and thus no timelocked transaction. Instead they will only have a closing transaction outputting the balance to each party in the channel without any restrictions. With only channel graphs containing founding and closing transactions, we have limited in characteristcs to use for identification. In the \cref{subsec:pcln} and the start of this section we explained how the channel is built on a a P2WSH 2of2 multisig output located in the founding tx, and we also discussed using these properties for identification, and how it allows us to identify potential candidates and can be used to rule out all transactions without these properties.
-We have also implemented identification of possible closing transactions by using the P2WSH 2of2 multisig properties; everything except the initial identification being done with 2ofo2 multisig redeem scripts, instead of timelocked redeem script is the same as the general method discussed in \cref{timelocked_identification}.
- When using these properties to attempt to identify channels, we will get a set containing all LN related transction, but it will also have transactions which are unrelated. The effectiveness of this method will be determined on how many of the transactions are related compared to the amount that is not. This again will depend on the current use-cases for 2of2 multisig transactions besides on-chain LN transactions, and how widely these are used. To determine the current effectiveness of this method, we will compare data from the blockchain with data gathered through the LN, which we will discuss in more detail in \cref{sec:ln_analysis}. 
- The redeem script located in the closing transaction will contain the properties used to identify possible candidates, so again, we will only be able to identify closed channels.
-Below is the 2of2 multisig redeem script format, and a example of such a script in bytes:
-\\
-
-2 <public key 1> <public key 2> 2 OP\_CHECKMULTISIG
-\\
-
-\noindent [82 33 2 211 153 245 240 225 125 95 140 116 20 99 81 38 139 135 136 59 14 125 34 181 148 47 67 16 42 24 147 28 144 61 33 33 2 215 1 70 141 233 112 91 253 252 202 27 73 158 254 234 159 125 98 30 78 159 235 6 46 167 103 105 239 180 125 168 66 82 174]
-\\
-
-In \cref{subsec:scripts} we used multisig scripts as an example of redeem scripts used in pay to script hash transactions. They are compared to the redeem scripts used in timelocked transactions quite simple, consisting only of two numbers denoting the required and total number of keys that can be used to sign, the public keys themselves, and the checkmultisig operation. As shown above we start with the required number of keys which must be used for signing, in this case 2, being 82 in the byte version. Then we have the first public key required to spend the output, in the same compressed format as in the timelocked script with a length of 33 bytes, starting with the prefix of either 2 or 3. Then we have the other public key in the same format, followed by the 2 or 82 in byte format telling us the total number of keys which can be used for signing. At the end we have the opcode 174 OP\_CHECKMULTISIG, which checks signatures against the public keys. To identify this type of script we check if the opcodes are present at their expected locations in the script, and the total length of the script. As mentioned channels closed co-operativly will not have the timelocked transaction, so when we use this method to identify possible LN channels on the blockchian, the channel graphs created will be smaller.
-\\
+\subsection{HTLC discussion}
+\label{subsec:information_ln}
 
 \subsection{Non implicit LN information on the blockchain}
 \label{subsec:information_ln}
