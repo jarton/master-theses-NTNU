@@ -1,5 +1,10 @@
 \chapter*{Abstract}
 
-This is a summary of the thesis including the conclusion of what was discovered.
+The Bitcoin blockchian is the public shared ledger defining the shared transaction history for the Bitcoin system. But with the creation of payment channel networks such as the lightning network, the blockchain will also be used to facilitate transactions in a separate network. 
+While the transactions in this network will not impact the blockchain, the channels which this network consists of, does requires the blockchian to operate. These transactions are used to created and close channels, in addition they handle disagreements in the lightning network.
+By exploring the blockchain, we have created methods for identifying the transactions related to the lightning network. The methods use different transaction characteristics differing in uniqueness, making some methods more precise but having fewer result and vice versa.
+The effectiveness of these methods have been quantified by comparing it to data directly from the lightning network. The result shows that the methods are viable for finding a subset of transactions, and that precision can be sacrificed for finding even more.
+By identifying these transactions we have determined what information about the LN we can see from the blockchain perspective, and also where aspects that is limited. We have also adapted heuristics from previous work to these transactions, which we used to link related information. The linked information enabled us to create networks showing relations between the channels in the lightning network. 
+While being limited compared to the actual relations found within the lightning network, they show how the blockchain can be used to infer information about the lightning network. The work also identifies several potential methods for finding more information using what is available on the blockchain.
 
 \hypersetup{pageanchor=false}
