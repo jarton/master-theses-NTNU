@@ -31,8 +31,8 @@ Channel graphs created using this method will contain the founding and closing t
 This will also be the case for all types of channel graphs, as it is these transactions that represents a channel on-chain.
 To create the channel graphs when parsing the blockchain, we must be able to differentiate between on-chain LN transactions and other Bitcoin transactions. Therefore, we must find some characteristics needed or only found in on-chain LN transactions. 
 In \cref{fig:ln_tx_graph} we can see some characteristics of the founding and closing transactions.
-The output in the founding transaction used for the channel must be P2WSH, and the closing transaction will always have one input which will be a 2of2 multisig redeem script as explained in \cref{subsec:pcln}. The different characteristics have different levels of uniqueness, but using more unique characteristics will often impact the number of channels which can be identified, meaning there is a trade-off between specificity and broadness for identification. An example of this is the P2WSH output type, which is not very unique, so it will provide many false positives, but will allow for detection of both closed and open channels, which we will discuss more in \cref{subsec:information_ln}. 
-The 2of2 redeem script is on the other hand more unique, as it is a specific redeem script and must therefore also belong to a P2WSH output - input pair. In the founding transaction we will only be able to check if it has any P2WSH outputs, while the closing transaction will allow us to check for the 2of2 multisig characteristic, which the presence of also entails the P2WSH characteristic.
+The output in the founding transaction used for the channel must be {\tt P2WSH}, and the closing transaction will always have one input which will be a 2of2 multisig redeem script as explained in \cref{subsec:pcln}. The different characteristics have different levels of uniqueness, but using more unique characteristics will often impact the number of channels which can be identified, meaning there is a trade-off between specificity and broadness for identification. An example of this is the {\tt P2WSH} output type, which is not very unique, so it will provide many false positives, but will allow for detection of both closed and open channels, which we will discuss more in \cref{subsec:information_ln}. 
+The 2of2 redeem script is on the other hand more unique, as it is a specific redeem script and must therefore also belong to a {\tt P2WSH} output - input pair. In the founding transaction we will only be able to check if it has any {\tt P2WSH} outputs, while the closing transaction will allow us to check for the 2of2 multisig characteristic, which the presence of also entails the {\tt P2WSH} characteristic.
 Using closing transactions will limit us to closed channels, but the transactions matching our characteristics are more likely to be LN related. While the 2of2 multisig reedem script will be present in all closing transactions for LN channels, they can also be used for other purposes. We therefore cannot use this to determine with certainty if a transaction is a closing transaction or not, but it will rule out all transactions without this characteristic. So by locating all transactions having inputs with such redeem scripts, we will have all potential closing transactions, and by following the input - output connection we can also locate the founding transaction, providing us with a channel graph with the transactions as shown in \cref{fig:ln_tx_graph_small}.
 
 \begin{figure}[h]
@@ -49,10 +49,11 @@ As explained in \cref{subsec:blockchain} the  blocks in the blockchain contains 
 \\
 
 The software we have developed for this project parses the blockchain and identifies relevant transactions, using both the multisig and timelocked identification methods.
-We use the btcd \cite{btcd_roasbeef} Bitcoin implementation written in Go, for fetching and storing the blockchain data, and we also use its libraries to read the blockchain data in our software.
+We use the btcd \cite{btcd_roasbeef} Bitcoin implementation written in Go, to synchronize and store the blockchain data.
+Our software, which is also written in Go, uses libraries from btcd to read this data from disk and make it available to us in a convenient manner.
 At a high level our software finds the latest block from the blockchain stored on disk and uses it as a starting point;
-it then iterates over the transactions in the block, and checks if they are relevant for our project-i.e., is part of a channel graph. If that is the case they are stored in a channel graph structure. After all transactions in a block is parsed, the hash of the preceding block is used to fetch it from the disk, and the same process is repeated.
-For each transaction it parses, it checks if the inputs have a 2of2 redeem script, if that is the case a channel graph is created and the transaction is stored as a closing transaction.
+it then iterates over the transactions in the block, and checks if they are relevant for our project-i.e., is part of a channel graph. If that is the case they are stored in a data structure representing a channel graph. After all transactions in a block is parsed, the hash of the preceding block is used to fetch it from the disk, and the same process is repeated.
+For each transaction parsed, the input part is checked for the presence of a 2of2 redeem script, if that is the case, a channel graph is created and the transaction is stored as a closing transaction.
 As explained in \cref{subsec:segwit} each transaction has a id, which is the transaction hash.
 Transaction inputs references the hash of the transaction containing the output they spend, so when finding a potential closing transaction we get the hash of the corresponding founding transaction.
 This is stored in a list, which we can use to recognize founding transactions when we encounter them in the blockchain.
@@ -78,10 +79,10 @@ As we explained in \cref{subsec:scripts} the operations in Bitcoin scripts is ca
 We covered in \cref{subsec:scripts} and \cref{subsec:pcln} the purpose of this script is to create a scenario where multiple keys is required to unlock a output and spend it.
 The scripts consists of of two numbers denoting the required and total number of keys required to create signatures, the public keys for the key pairs that can be used, and the checkmultisig operation. The required and total number of keys required will in our case be 2, as we are only looking for 2of2 scripts.
 As shown above, the script starts with the required number of keys which must be used for signing, in this case 2, being 82 in the byte version. Then there is the first public key of the key pair able to sign. 
-In the byte version the second vector is 33, which indicates how many bytes to push to the stack; this is the length of a compressed public key with prefix. Bitcoin uses elliptic curve cryptography, where a public key is two coordinates representing a point on the curve. The prefix for compressed keys can be 02 or 03, indicating if the y coordinate is even or odd \cite{antonopoulos2017mastering}. So the first byte vector in a compressed public key, and the third byte vector in this type of script will always be 2 or 3, and the 32 next bytes will be the rest of the compressed key <public key 1>. Then we have the other public key <public key 2> in the same format, followed by 2 or 82 in byte format, telling us the total number of keys which can be used for signing. At the end we have the opcode 174 OP\_CHECKMULTISIG, which checks signatures against the public keys. To identify this type of script we check if the opcodes are present at their expected locations in the script, and the total length of the script. This means we check if certain indexes in the byte array contains the data we expect-e.g., we would expect the last index in the byte array to contain 174.
+In the byte version the second vector is 33, which indicates how many bytes to push to the stack; this is the length of a compressed public key with prefix. Bitcoin uses elliptic curve cryptography, where a public key is two coordinates representing a point on the curve. The prefix for compressed keys can be 02 or 03, indicating if the y coordinate is even or odd \cite{antonopoulos2017mastering}. So the first byte vector in a compressed public key, and the third byte vector in this type of script will always be 2 or 3, and the 32 next bytes will be the rest of the compressed key {\tt <public key 1>}. Then we have the other public key {\tt <public key 2>} in the same format, followed by 2 or 82 in byte format, telling us the total number of keys which can be used for signing. At the end we have the opcode 174 {\tt OP\_CHECKMULTISIG}, which checks signatures against the public keys. To identify this type of script we check if the opcodes are present at their expected locations in the script, and the total length of the script. This means we check if certain indexes in the byte array contains the data we expect-e.g., we would expect the last index in the byte array to contain 174.
 \\
 
-When using 2of2 multisig redeem scripts, which also entails using P2WSH for identifying potential channels, our result will contain all actual LN channels, but likely also many that are not. The effectiveness of this will depend on the current use-cases for 2of2 multisig transactions besides on-chain LN transactions, and how common these are. To determine the current effectiveness of this method, we will compare data from the blockchain with data gathered through the LN, and with results from our other method. This will allow us to quantify the actual number of channels identified using this method, compared to the amount of false positives.
+When using 2of2 multisig redeem scripts, which also entails using {\tt P2WSH} for identifying potential channels, our result will contain all actual LN channels, but likely also many that are not. The effectiveness of this will depend on the current use-cases for 2of2 multisig transactions besides on-chain LN transactions, and how common these are. To determine the current effectiveness of this method, we will compare data from the blockchain with data gathered through the LN, and with results from our other method. This will allow us to quantify the actual number of channels identified using this method, compared to the amount of false positives.
 The \cref{sec:ln_analysis} will contain a more in-depth discussion of this.
 
 \subsection{Identification using timelocked outputs}
@@ -93,8 +94,8 @@ In \cref{fig:ln_tx_graph} we can see how a channel graph is structured when this
 We still have the founding and closing transactions, but the closing transaction is also a commitment transaction, as it was used to close the channel.
 When a commitment transaction is published the output to the entity closing the channel will be timelocked, as we explained in \cref{subsec:pcln}.
 This was to enable the other party to spend the output using the revocation key, in the case of the commitment being revoked-i.e., any commitment other the most recent.
-In the blockchain this is implemented using a P2WSH output, which have a redeem script containing a timelock, and a clause for the revocation key.
-As redeem scripts is only avaialble in the input of the transaction spending the P2WSH output, similarly as with the 2of2 multsig redeem script,
+In the blockchain this is implemented using a {\tt P2WSH} output, which have a redeem script containing a timelock, and a clause for the revocation key.
+As redeem scripts is only avaialble in the input of the transaction spending the {\tt P2WSH} output, similarly as with the 2of2 multsig redeem script,
 we will find this script in the transaction spending the timelocked output. 
 We will refer to this transaction as the timelocked transaction, which can be seen on the right in \cref{fig:ln_tx_graph}.
 
@@ -133,7 +134,7 @@ This whole process can be seen in \cref{fig:algo2}, which is similar to the one 
     \label{fig:algo2}
 \end{figure}
 
-The timelocked redeem script \cite{bolt3} used to identify the timelocked transactions can be seen below:
+The timelocked redeem script defined in~\cite{bolt3}, is the redeem script used to identify the timelocked transactions, and can be seen below:
 
 \begin{verbatim}
 OP_IF
@@ -151,8 +152,9 @@ OP_CHECKSIG
 % timelocked script
 The script contains a if - else clause, with the if clause being the one which allows the opposing party to spend the output in the case of the commitment transaction being revoked.  
 In  \cref{subsec:pcln} we explained in detail how the parties will revoke old commitment transactions by exchanging keys, allowing the other party to spend the timelocked output with the key, and thus claim all the founds in the channel; this first clause is how this is done in practice.
-A signature from the key pair of the <revocationpubkey> found in this clause, will make script evaluate to true, and thus allowing for the transaction to be spent.
-The else clause is the timelocked portion of the script. It will contain the timelock, enforced by the CHECKSEQUENCEVERIFY operation defined in \cite{BIP112}, which will terminate the script if the specified delay has not passed. The delay is then removed from the stack with OP\_DROP such that a signature and public key are the only two items on the stack. Lastly OP\_CHECKSIG is used to verify the signature against the <local\_delayedpubkey>.
+By supplying {\tt <revocation\_sig> 1} using a valid signature the script will evaluate to true. The 1 will make the script evaluate the first clause, and then the signatrue will be matched to the {\tt <revocationpubkey>} using {\tt OP\_CHECKSIG}.
+The else clause is the timelocked portion of the script. It will contain the timelock, enforced by the {\tt CHECKSEQUENCEVERIFY} operation defined in \cite{BIP112}, which will terminate the script if the specified delay has not passed. The delay is then removed from the stack with {\tt OP\_DROP} such that a signature and public key are the only two items on the stack. 
+To make the script use the else clause with the timelock, and check the signature against the {\tt <local\_delayedpubkey>} the witness data should be: {\tt <local\_delayedsig> 0}. Similar as to the revocation clause we have signature, and the 0 will make the script not use the if clause. Meaning the {\tt OP\_CHECKSIG} will used to verify the {\tt <local\_delayedsig>} against the {\tt <local\_delayedpubkey>}, as long as the timelock has expired. This means we can easily check if a timelocked script was revoked, by checking the witness data provided to the script for 0 or 1, we can determine which clause was used, and as it is included in the blockchain the script has been evaluated and found to be valid.
 %The script will be located as the last item in the witness stack inside a transaction; see \cref{subsec:segwit} where we explained how the witness stack is structured for P2WSH transactions.
 Below is the raw byte representation of a specific redeem script of the type shown above. Again, this is because our implementation handles the byte version of the scripts when identifying them. The byte version has been formatted in the same manner as the clear-text version, to allow for easier comparison.
 \\
@@ -171,9 +173,9 @@ Below is the raw byte representation of a specific redeem script of the type sho
 \\
 
 %byte rep of script
-The first byte vector seen in the byte script above is 99 which is the opcode for the the OP\_IF operation. The next vector is 33, which indicates how many bytes to push; As explained for the 2of2 multisig script: this is the length of a compressed public key with prefix. So the 33 next vectors will be the <revocationpubkey>. After this public key we will find the OP\_ELSE with the opcode 103, followed by the 82 'to\_self\_delay' which is the delay used for the OP\_CHECKSEQUENCEVERIFY (OP\_CSV) operation, having opcode 178. 
-Next vector is 117 which is the OP\_DROP operation, and after we find the <local\_delayedpubkey> in the same format as <revocationpubkey>; 33 indicating the number of bytes to push to the stack followed by the prefix and the rest of the key. After that we have 104 which is the opcode for OP\_ENDIF, and 172 for OP\_CHECKSIG.
-To identify this type of redeem script in timelocked transactions we check if the opcodes can be found at the expected locations. E.g., index 0 of the byte array should be 99 for the OP\_IF, and 103 for the OP\_ELSE operation should be at index 35, allowing space for a public key between it and the OP\_IF operation. Each opcode found in this script type is used for recognition, meaning all opcodes covered here must be present in the script for it to be identified as a timelocked redeem script, and they must also be found at their expected location relative to the others.
+The first byte vector seen in the byte script above is 99 which is the opcode for the the {\tt OP\_IF} operation. The next vector is 33, which indicates how many bytes to push; As explained for the 2of2 multisig script: this is the length of a compressed public key with prefix. So the 33 next vectors will be the {\tt <revocationpubkey>}. After this public key we will find the {\tt OP\_ELSE} with the opcode 103, followed by the 82 'to\_self\_delay' which is the delay used for the {\tt OP\_CHECKSEQUENCEVERIFY} ({\tt OP\_CSV}) operation, having opcode 178. 
+Next vector is 117 which is the {\tt OP\_DROP} operation, and after we find the {\tt <local\_delayedpubkey>} in the same format as {\tt <revocationpubkey>}; 33 indicating the number of bytes to push to the stack followed by the prefix and the rest of the key. After that we have 104 which is the opcode for {\tt OP\_ENDIF}, and 172 for {\tt OP\_CHECKSIG}.
+To identify this type of redeem script in timelocked transactions we check if the opcodes can be found at the expected locations. E.g., index 0 of the byte array should be 99 for the {\tt OP\_IF}, and 103 for the {\tt OP\_ELSE} operation should be at index 35, allowing space for a public key between it and the {\tt OP\_IF} operation. Each opcode found in this script type is used for recognition, meaning all opcodes covered here must be present in the script for it to be identified as a timelocked redeem script, and they must also be found at their expected location relative to the others.
 \\
 
 As stated before, the inclusion of transactions in blocks naturally orders them, because transactions added in new blocks must have inputs from transactions already in the blockchain.
@@ -188,20 +190,40 @@ The memory consumption were also low, as our software only stored channel graphs
 \subsection{HTLC on-chain}
 \label{subsec:htlc_onchain}
 
-In \cref{subsec:htlcln} we covered how transfers is facilitated within the LN using the HTLC construct. 
-If the HTLC cannot be resolved off-chain, the channel will be closed and the HTLC will be handled on-chain.
-This will a P2WSH output from the commitment/closing transaction, with a redeem script allowing users to spend it in two ways:
-by either supplying the preimage R used to create the HTLC, or by waiting for the timelock to expire.
+In \cref{subsec:htlcln} we covered how transfers across multiple channels is facilitated by using the HTLC construct. As explianed, if the HTLC cannot be resolved off-chain, the channel will be closed and the HTLC will be handled on-chain.
+This will a {\tt P2WSH} output from the commitment/closing transaction, with a redeem script allowing users to spend it in two ways:
+by either supplying the preimage R used to create the HTLC, or by waiting for the timelock to expire, which will create a additional timelock. There are two versions of HTLC redeem scripts used in on-chain transactions, defined in the BOLT rfc~\cite{bolt3}. Which of the two types is used depends on if the party that published the commitment transaction to the blockchain is sending or receiving founds using the HTLC. These scripts are even more complex than the timelocked scripts, which would make them very good at identifying LN related transactions. Below is a the script used for the HTLC output when the publisher of the commitment has sent a HTLC to the other party:
+
+\begin{verbatim}
+# To remote node with revocation key
+OP_DUP OP_HASH160 <RIPEMD160(SHA256(revocationpubkey))> OP_EQUAL
+OP_IF
+    OP_CHECKSIG
+OP_ELSE
+    <remote_htlcpubkey> OP_SWAP OP_SIZE 32 OP_EQUAL
+    OP_NOTIF
+        # To local node via HTLC-timeout transaction (timelocked).
+        OP_DROP 2 OP_SWAP <local_htlcpubkey> 2 OP_CHECKMULTISIG
+    OP_ELSE
+        # To remote node with preimage.
+        OP_HASH160 <RIPEMD160(payment_hash)> OP_EQUALVERIFY
+        OP_CHECKSIG
+    OP_ENDIF
+OP_ENDIF
+\end{verbatim}
+
+Without going into great detail, the script first checks if it was provided the public revocation key.
+If this is the case, the first if clause will be used to check if the signature provided matches this public key. This will only happen if the HTLC was part of a revoked commitment transaction. If this is not the case the else clause is used, which will check if the HTLC public key of the party not publishing the commitment was provided. If this key is provided it means that party can use the preimage {\tt R}. The publisher can make the HTLC timeout by using the notif clause after the timelock. The other script is structured different, but has basically the same functionality as it swaps which of the parties can use the preimage {\tt R} or timeout the HTLC.
+\\
+
+Our software is able to recognize these scripts using similar methods as discussed in \cref{detection_ms} and \cref{timelocked_identification}. 
+They are however not used for identification of channels, and thus channel graph creation. Our focus has been on timelocked transactions as the main method for identification, as it provides a good mix of precision and amount of results. Our theory was that HTLC outputs, while being very unique, are not nearly as frequently found on the blockchiain as timelocked transactions. Additionally, the transactions containing redeem script like the one above, would spend commitment/closing transactions we would likely find using timelocked transactions.
+But by implementing the basic recognition of the scripts, we can check how often they do occur, and by comparing their inputs to our already identified closing transactions we can determine how many of the HTLC transactions would identify channels we could find using the timelocked method.
+\\
+
+As mentioned when explaining the script, and described in \cref{subsec:htlcln}, the transactions spending a HTLC output will have a additional timelock if the party that published the commitment spends the HTLC. This timelock will use the same script as the timelocked transaction spending a commitment output. In \cref{timelocked_identification} we mentioned how after identifying a timelocked transaction, we would check if the preceding transaction had a 2of2 multisig script, indicating it was a closing transaction. Not doing this, we would create channel graphs where the timelocked transaction was a HTLC timelocked transaction, the closing trasaction a HTLC transaction, and the founding transaction a closing transactions. This example shows that a specific script does not necessarily mean the transaction is the one we expect. In \cref{sec:future} we will discuss some possibilities by using HTLC related transaction and the data they contain.
 
 
-\todo{extra section. will remove if no time, but want some quick info about htlc's, need to reread about them. has results about them, so should be fairly quick to add to results, and a mention in results as potential method for more information. premiage R etc}
-
-Our software is able to recognize these scripts, allowing us to check how commonly they occur, but does not actively use them as a identification method of channels.
-The focus has been on using timelocked transactions, as the main method of identification, as it is a good combination of fairly unique and common transaction type in relation to LN channels. 
-Our theory was that HTLC outputs, while being very unique, are rare compared to timelocked outputs, and that a large portion the channels they are found in also has a timelocked output.
-But by being able to recognize them, we can see how rare they truly are, and as they are outputs of closing transactions we can see how many of them are outputs to channels we have found using the timelocked method.
-
-%script + byte 
 
 \subsection{Non implicit LN information on the blockchain}
 \label{subsec:information_ln}
@@ -220,6 +242,7 @@ Comparing that balance to the one in the two outputs will tell us how it has shi
 We can also see in \cref{fig:keys_graphs} how the value is initially spread in two outputs then merged in the channel and then spread out again in two outputs, so simply following a specific value will not work.
 Linking the keys used in these transactions as is done in previous work discussed in \cref{sec:related} will make this possible and is something we will discuss in \cref{sec:linking}.
 The one thing we can determine by looking at inputs and outputs of a channel, without any key linking, is that a off-chain transaction has taken place in the channel, but this is only the case if there is one input to the funding transaction (single founded) and there is multiple outputs, meaning we know the channel started with with all value belonging to one party and it ends with the parties splitting the value.
+\\
 
 \begin{figure}[h]
     \centering
@@ -228,13 +251,13 @@ The one thing we can determine by looking at inputs and outputs of a channel, wi
     \label{fig:keys_graphs}
 \end{figure}
 
-We discussed in \cref{detection_ms} how using P2WSH outputs would allow us to identify possible open channels, as all outputs used for LN channels are of this type. With the characteristic being fairly common we will most likely have many false positives, but we can use this fact to determine the maximum size (number of channels) of the LN.
-By counting the number of unspent P2WSH outputs we will get maxium number of channels open. This can also be done to get the maximum number of LN channels at any historical point of the blockchain;
-by counting all P2WSH outputs and subtracting the spent ones up to a height on the blockchain will get us the unspent outputs at that point.
+We discussed in \cref{detection_ms} how using {\tt P2WSH} outputs would allow us to identify possible open channels, as all outputs used for LN channels are of this type. With the characteristic being fairly common we will most likely have many false positives, but we can use this fact to determine the maximum size (number of channels) of the LN.
+By counting the number of unspent {\tt P2WSH} outputs we will get maxium number of channels open. This can also be done to get the maximum number of LN channels at any historical point of the blockchain;
+by counting all {\tt P2WSH} outputs and subtracting the spent ones up to a height on the blockchain will get us the unspent outputs at that point.
 While this might not be accurate in terms of actual number of channels (size) for the LN, it will give us a concrete upper limit to its size, both current and at any point in the past.
-We can also use LN data to correlate between the number of unspent P2WSH outputs and open channels in the LN at different points in time. Which will indicate how closely the number P2WSH outputs reflects the number of LN channels.
+We can also use LN data to correlate between the number of unspent {\tt P2WSH} outputs and open channels in the LN at different points in time. Which will indicate how closely the number {\tt P2WSH} outputs reflects the number of LN channels.
 
-\section{Lightning network analysis}
+\section{Lightning network data collection}
 \label{sec:ln_analysis}
 
 % lnd introduction
@@ -289,7 +312,7 @@ These are only for linking channel graphs based on common user participation; tw
     \item \textbf{Key reuse}\\
 This heuristic is simply to check if the same keys is present in different channel graphs.  
 Any key found within a channel graph is sure to belong to one of the two users participating in the channel, so if the same key can be found in another graph we know the user owning the key participated in both channels.
-This heuristic becomes useful because we are linking sets of transactions-i.e., transaction graphs representing channels. In previous work where they where linking keys, this becomes redundant as a key is obviously related to itself, but in our case we are not interested in keys as such but rather how they reveal user involvement. Because we know there is only two people participating in transactions within the channel graph, keys from any transaction inside the graph can be checked for reuse. The keys used in the founding and closing transactions clearly belongs to the participants, but with the timelocked transaction we cannot be so sure. The BOLT rfc \cite{bolt5} heavily recommends the owner to spend the timelocked output when it expires to transfer the value to a convenient address, reason being the redeem script required to spend the timelocked output, so the advanced script must be kept until the output is spent, which is inconvenient compared to having the value available in a normal P2WPKH output.
+This heuristic becomes useful because we are linking sets of transactions-i.e., transaction graphs representing channels. In previous work where they linked keys, this becomes redundant as a key is obviously related to itself, but in our case we are not interested in keys as such but rather how they reveal user involvement. Because we know there is only two people participating in transactions within the channel graph, keys from any transaction inside the graph can be checked for reuse. The keys used in the founding and closing transactions clearly belongs to the participants, but with the timelocked transaction we cannot be so sure. The BOLT rfc \cite{bolt5} heavily recommends the owner to spend the timelocked output when it expires to transfer the value to a convenient address, reason being the redeem script required to spend the timelocked output, so the advanced script must be kept until the output is spent, which is inconvenient compared to having the value available in a normal {\tt P2WPKH} output.
 Assuming implementations follow this recommendation, the timelocked transaction and the keys found within should only contain keys related to the user which claimed the timelocked output. We should however note that the key reuse needs to happen in different channels, as key reuse within a single channel does not allow us to link any channels.
 \\
 

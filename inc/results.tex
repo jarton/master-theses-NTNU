@@ -17,7 +17,7 @@ Comparing data from the LN with our data from the blockchain, provided us with r
     \item The set  \( \gamma \), containing potential channels identified on the blockchain using 2of2 multisig scripts.
 \end{itemize}
 
-As we stated previously a LN channel uses the P2WSH 2of2 multisig type for the on chain founding - closing output - input pair. In \cref{detection_ms} we discussed how this could be used to give us a set of potential transactions being related to LN channels. Because the on-chain channel transactions must be of this type the \( \gamma \) set is guaranteed to include all channels closed in the block interval used for the search. It also means that the two other sets will be subset of \( \gamma \). So the relations between the sets should be as follows:
+As we stated previously a LN channel uses the {\tt P2WSH} 2of2 multisig type for the on chain founding - closing output - input pair. In \cref{detection_ms} we discussed how this could be used to give us a set of potential transactions being related to LN channels. Because the on-chain channel transactions must be of this type the \( \gamma \) set is guaranteed to include all channels closed in the block interval used for the search. It also means that the two other sets will be subset of \( \gamma \). So the relations between the sets should be as follows:
 
 \begin{equation} \label{eq:1}
       \alpha \subseteq \gamma, \hspace{10pt} \beta \subseteq \gamma, \hspace{10pt} \beta \subseteq \alpha  
@@ -58,9 +58,9 @@ This would also mean that than 75\% of 2of2 multisig transaction are likely LN c
 
 \section{Lightning network size}
 
-We mentioned in \cref{subsec:information_ln}, how we could use the fact that the outputs used for creating a channel has to be of the P2WSH type, to determine the maximum possible size of the LN.
-While parsing the blockchain we have counted all unspent P2WSH outputs for each block height, in both the mainnet and the testnet.
-The results of this can be found in \cref{fig:ln_size}, as a graph showing unspent P2WSH outputs for different block heights.
+We mentioned in \cref{subsec:information_ln}, how we could use the fact that the outputs used for creating a channel has to be of the {\tt P2WSH} type, to determine the maximum possible size of the LN.
+While parsing the blockchain we have counted all unspent {\tt P2WSH} outputs for each block height, in both the mainnet and the testnet.
+The results of this can be found in \cref{fig:ln_size}, as a graph showing unspent {\tt P2WSH} outputs for different block heights.
 We can see a distinct difference between the two networks: the mainnet has a more organic growth as a result of real world use, while the testnet graph is characterized by the testing which the network is used for. The sharp decline in unspent outputs on the mainnet at around block 505 000 can be explained by the sharp decline in fees for doing transactions at that time \cite{mempool_stats}, which incentivized users to consolidate their unspent outputs into fewer bigger ones. 
 
 \begin{figure}[ht]
@@ -73,30 +73,30 @@ We can see a distinct difference between the two networks: the mainnet has a mor
 \begin{figure}[ht]
     \centering
     \includegraphics[width=10cm]{figures/graphs/channel_p2wsh_correlation_mainnnet.png}
-    \caption{Correlation between unspent P2WSH outputs and channels open in the LN}
+    \caption{Correlation between unspent P2WSH outputs and channels open in the LN mainnet}
     \label{fig:correlation}
 \end{figure}
 
 \begin{figure}[h]
     \centering
     \includegraphics[width=10cm]{figures/graphs/channel_p2wsh_correlation_testnet.png}
-    \caption{Correlation between unspent P2WSH outputs and channels open in the LN}
+    \caption{Correlation between unspent P2WSH outputs and LN channels on the testnet}
     \label{fig:correlation_testnet}
 \end{figure}
 
-While the unspent output count provides a concrete upper limit on the number of channels and therefore size of the LN, we also wanted to know to which degree the amount of unspent P2WSH transactions was correlated to the size of the LN. It is clear that changes in the size of the LN will impact the number of P2WSH outputs/inputs, but there might be many other transactions not related to the LN having a larger impact. From the data we collected from the LN itself we constructed a total channel count for each block height in the collection interval. Similarly we isolated the same block interval with the P2WSH output count from the blockchain. These two variables allowed us to compare the changes of number of channels in the LN and number of unspent P2WSH outputs. We used Kendall rank correlation coefficient on this data for the mainnet, which gave us a correlation coefficient of 0.73 indicating a strong positive correlation. The scatter plot for this can be seen in \cref{fig:correlation}.
+While the unspent output count provides a concrete upper limit on the number of channels and therefore size of the LN, we also wanted to know to which degree the amount of unspent {\tt P2WSH} transactions was correlated to the size of the LN. It is clear that changes in the size of the LN will impact the number of {\tt P2WSH} outputs/inputs, but there might be many other transactions not related to the LN having a larger impact. From the data we collected from the LN itself we constructed a total channel count for each block height in the collection interval. Similarly we isolated the same block interval with the {\tt P2WSH} output count from the blockchain. These two variables allowed us to compare the changes of number of channels in the LN and number of unspent {\tt P2WSH} outputs. We used Kendall rank correlation coefficient on this data for the mainnet, which gave us a correlation coefficient of 0.73 indicating a strong positive correlation. The scatter plot for this can be seen in \cref{fig:correlation}.
 We did the same for the interval of testnet data we collected, which resulted in a coefficient of 0.45 which is only a moderate correlation. 
 The scatter plot for the testnet can be seen in \cref{fig:correlation_testnet}.
 Both tests has the same p value: p < 2.2e-16. 
-While the two things will be correlated naturally due to the need for channel outputs to be P2WSH, the results here indicate there is a strong correlation. The testnet showing a weaker correlation can be due to the unnatural use taking place on the testnet, as was apparent from \cref{fig:ln_size} graph showing unspent output for different block heights. Addionally, the correlation was limited to the amount of data from our collection intervals, meaning we could only correlate the two for around 1000 blocks.
+While the two things will be correlated naturally due to the need for channel outputs to be {\tt P2WSH}, the results here indicate there is a strong correlation. The testnet showing a weaker correlation can be due to the unnatural use taking place on the testnet, as was apparent from \cref{fig:ln_size} graph showing unspent output for different block heights. Additionally, the correlation was limited to the amount of data from our collection intervals, meaning we could only correlate the two for around 1000 blocks.
 
 \section{Stats from complete runs}
 \label{sec:fullrun}
 
-We also tried to run our software with the timelocked redeem scripts method for as long as there was any P2WSH transactions on the blockchain, to collect as many channels as possible. As this method is precise and can find a fair amount of channels, it was chosen as the main method when doing this. This resulted in a set of channel graphs for every unilaterally closed channel that has existed up to the point we started parsing. On the mainnet we started on block 524 816 and ended on block 464 816 resulting in a total of 3 809 channels found. For each timelocked redeem script we also checked if it was spent with the revocation key or with the key that was timelocked. On the mainnet we found that 163 timelocked outputs were spent with the revocation key, meaning at least this many old commitment transactions was published. In \cref{timelocked_identification} we described how users could spend unconfirmed transactions, resulting in the transactions being found within the same bock. We found a total of 29 such instances, only checking the transactions wihin our channel graphs.
-% add htlc if time. also add in method checking of timelocked script revoked
-Doing the same for the testnet resulted in 8047 channels found, starting on block 1 316 196, and ending on block 816 196. Here we found 38 timelocked outputs spent with the redeem key, and 430 of our transactions being found within the same block.
-Using these two sets of channel graphs, we extracted stats about the channels as discussed in \cref{subsec:information_ln}, which the results of can be seen in \cref{subgraph_stats}.
+We also tried to run our software with the timelocked redeem scripts method for as long as there was any {\tt P2WSH} transactions on the blockchain, to collect as many channels as possible. As this method is precise and can find a fair amount of channels, it was chosen as the main method when doing this. This resulted in a set of channel graphs for every unilaterally closed channel that has existed up to the point we started parsing. On the mainnet we started on block 524 816 and ended on block 464 816 resulting in a total of 3 809 channels found. For each timelocked redeem script we also checked how the script was evaluated, telling us if the revocation or timelocked clause were used. On the mainnet we found that 163 timelocked outputs were spent with the revocation key, meaning at least this many old commitment transactions was published. In \cref{timelocked_identification} we described how users could spend unconfirmed transactions, resulting in the transactions being found within the same bock. We found a total of 29 such instances, only checking the transactions wihin our channel graphs.
+Regarding HTLC frequency on-chain, we found a total of 163 transactions containing HTLC redeem scripts. 101 of these turned out to be spending outputs from closing transactions of graphs we already had identified, which means we could have identified 62 more channels by also using this method.
+Doing the same for the testnet resulted in 8047 channels found, starting on block 1 316 196, and ending on block 816 196. Here we found 38 timelocked outputs spent with the revocation key, and 430 of our transactions being found within the same block. On the testnet we found 566 HTLC transactions, with 143 of them not being connected to any of the channel graphs we had identified. 
+Using these two sets of channel graphs, we extracted stats about the channels as discussed in \cref{subsec:information_ln}. This gave us  data on the value used in each channel as the amount of Bitcoin (btc), and the lifetime of channels in terms of the number of blocks between opening and closing the channel. The results of this can be seen in \cref{subgraph_stats}.
 We also included the same stats from the data collected from the LN during our intervals described in \cref{sec:method_verification}. 
 While this can provide some comparison between the stats, as found on the blockchain and from the LN, it will has limits as the blockchian data is for a much longer time interval compared to the LN data.
 The One clear difference between the mainnet and testnet is the amount of value used for the channels, as we briefly mentioned before coins on the testnet has no value to people, so it would be natural that they are more liberal when creating channels there. We can also see that the testnet data is similar for both theblockchain and LN, while this is not the case for the mainnet. This can indicate that the these stats on the testnet are more constant, while the mainnet channels now has lower value but higher lifetime than the average for all time.
@@ -110,18 +110,18 @@ The One clear difference between the mainnet and testnet is the amount of value 
 %\hline
                                               & \textbf{Mainnet} & \textbf{LN Mainnet}& \textbf{Testnet} & \textbf{LN testnet} \\ \hline
 \textbf{Sample size (channels)}              & 3809             & 715           & 8047                     & 251            \\ \hline
-\textbf{Average Channel value}               & 439 556          & 233 750         & 7 086 336            &7 758 942       \\ \hline
-\textbf{Median channel value}                & 100 000          & 50 000         & 5 000 000            & 6 000 000        \\ \hline
-\textbf{Standard Deviation Channel value}    & 1 384 113        & 586 706       & 7 067 473            & 7 191 958        \\ \hline
+\textbf{Average Channel value}               & 0.00439556     & 0.0023375        & 0.07086336            & 0.07758942       \\ \hline
+\textbf{Median channel value}                & 0.001         & 0.0005             & 0.005            & 0.06        \\ \hline
+\textbf{Standard Deviation Channel value}    & 0.01384113       & 0.00586706      & 0.07067473            & 0.07191958        \\ \hline
 \textbf{Average channel lifetime}            & 1 600            & 1 940           & 2 441                & 1 269            \\ \hline
-\textbf{Median channel lifetime}             & 693              & 1 836             & 433                  & 312              \\ \hline
+\textbf{Median channel lifetime }             & 693              & 1 836             & 433                  & 312              \\ \hline
 \textbf{Standard Deviation channel lifetime} & 2 183            & 1 791           & 5 631                & 4 059            \\ \hline
 \end{tabular}
 \end{table}
 
 In \cref{channel_input_output} we see the distribution for the number of inputs and outputs to channels. These results are fairy similar for both networks, we should however note the percent of channels having two outputs in relation to the percent having only one input. For the mainnet the percent of channels having one input is 70\%, and the percent of channels only having one output is 71\%. As discussed in \cref{subsec:information_ln} we cannot easily match input - output pairs to users in the channel, so these number either means that many channels does no off-chain transactions at all, meaning the single input will be outputted back to owner, or that all founds in the channel ends up at one of the entities as a result of off-chain transactions. In the testnet column we can see how the single output percentage is lower compared to the single input percent, also the double output percent is higher than the double input. This indicates that many single founded channels ends up with splitting the value when they close, and as we stated in \cref{sec:bc_analysis} this enables us to say that off-chain transactions has taken place inside the channel.
 This difference is also present when we checked how many channels had the same number of inputs as outputs. On the mainnet 57\% of channels found have the same number of inputs as outputs, while on the testnet this is 46\%. 
-% htlc stats
+Using the HTLC transactions we found which also was outputs from closing transactions in our channel graphs, we can determine how often they occur: 2.6\% of channels on the mainnet and 5.2\% on the testnet would have one HTLC output. Comparing with the \cref{channel_input_output} we can see how this can make up all of the channels with two outputs, and also the ones with three or more as channels certainly can have more HTLC outputs.
 \\
 
 \begin{table}[ht]
@@ -145,7 +145,7 @@ This difference is also present when we checked how many channels had the same n
 \section{Linking}
 
 Our software also linked the sets of channels graphs found, using the methods and heuristics described in \cref{sec:linking}.
-The linking was done, both on the set of channel graphs found on the blockchain during the LN collection intervals, and the sets of channels found when doing complete runs as described in \cref{sec:fullrun}. In \cref{key_reuse_table} we can see the findings in regards to key reuse, when checking the channels graphs for testnet and mainnet found during the complete runs. Using the 3 809 channels we found on the mainnet, we extracted a total of 26 824 unique keys from the transaction in the graphs, with 1 370 or 5.1\% of these being found multiple times. These keys combined where reused 2 850 times, which if the key reuse was evenly distributed in the channel graphs, each channel graph would have 0.75 keys used in another channel graph. For the 8 047 channels found on the testnet, we got 50 050 unique keys. The results here are very similar to the mainnet, with 6.5\% of the keys found were reused, and 0.9 reused keys per channel graph if they where equally distributed. As discussed in \cref{sec:linking} regarding key reuse: key reuse within the same channel graph does not let us allow to link channels, but our results below does not take this into account, but we will address it later in this section.
+The linking was done, both on the set of channel graphs found on the blockchain during the LN collection intervals, and the sets of channels found when doing complete runs as described in \cref{sec:fullrun}. In \cref{key_reuse_table} we can see the findings in regards to key reuse, when checking the channels graphs for testnet and mainnet found during the complete runs. Using the 3 809 channels we found on the mainnet, we extracted a total of 26 824 unique keys from the transaction in the graphs, with 1 370 or 5.1\% of these being found multiple times. These keys combined where reused 2 850 times, which if the key reuse was evenly distributed in the channel graphs, each channel graph would have 0.75 keys used in another channel graph. For the 8 047 channels found on the testnet, we got 50 050 unique keys. The results here are very similar to the mainnet, with 6.5\% of the keys found were reused, and 0.9 reused keys per channel graph if they were equally distributed. As discussed in \cref{sec:linking} regarding key reuse: key reuse within the same channel graph does not let us allow to link channels, but our results below does not take this into account, but we will address it later in this section.
 \\
 
 \begin{table}[ht]
@@ -163,7 +163,7 @@ The linking was done, both on the set of channel graphs found on the blockchain 
 \end{tabular}
 \end{table}
 
-Our two other heuristics was also used on these channel sets, allowing us to determine how many channels we where able to link using these. The results of this is shown in \cref{table:connections}. For heuristic one, where we found directly connected graphs trough outputs - inputs, we have separate results for each possible output which can be the source of such a link. We discovered a clear difference between the different outputs: the outputs from the founding transactions makes up over 65\% of the connections found using heuristic one, both on the testnet and mainnet, compared to 2.1\% or less for the outputs from the closing transactions. The outputs from the timelocked transactions makes up 30\% and 33\% of the connections on the mainent and testnet respectively. One possible explanation for this difference has to do with the value of the outputs: closing and timelocked outputs are used to give one party their value from the channel, meaning the value of these outputs is limited to the channel balance of the participant owning them; outputs from the founding transaction on the other hand, is used to transfer change resulting from the output spent to found the channel, which has no size limit, meaning a output many times the value of the channel can be used. Unless multiple inputs is used to found a channel, creating a new channel using the outputs from another will limit the value of the founding input to the balance in the previous channel. A possible reason for the difference between closing and timelocked outputs could be the recommendation to spend timelocked outputs discussed in \cref{sec:linking}, which means if one is closing many channels unilaterally at the same time, consolidation of all timelocked outputs into one timelocked transaction is a natural thing to do; this would cause graph overlap, but also create a high value output from the timelocked transaction which could be used to found new channels. Heuristic 3 which used graph overlap or multi-input timelocked transactions provided 12\% on mainnet, and 24\% on the testnet, of the total connections found using both heuristic two and three.
+Our two other heuristics was also used on these channel sets, allowing us to determine how many channels we were able to link using these. The results of this is shown in \cref{table:connections}. For heuristic one, were we found directly connected graphs trough outputs - inputs, we have separate results for each possible output which can be the source of such a link. We discovered a clear difference between the different outputs: the outputs from the founding transactions makes up over 65\% of the connections found using heuristic one, both on the testnet and mainnet, compared to 2.1\% or less for the outputs from the closing transactions. The outputs from the timelocked transactions makes up 30\% and 33\% of the connections on the mainent and testnet respectively. One possible explanation for this difference has to do with the value of the outputs: closing and timelocked outputs are used to give one party their value from the channel, meaning the value of these outputs is limited to the channel balance of the participant owning them; outputs from the founding transaction on the other hand, is used to transfer change resulting from the output spent to found the channel, which has no size limit, meaning a output many times the value of the channel can be used. Unless multiple inputs is used to found a channel, creating a new channel using the outputs from another will limit the value of the founding input to the balance in the previous channel. A possible reason for the difference between closing and timelocked outputs could be the recommendation to spend timelocked outputs discussed in \cref{sec:linking}, which means if one is closing many channels unilaterally at the same time, consolidation of all timelocked outputs into one timelocked transaction is a natural thing to do; this would cause graph overlap, but also create a high value output from the timelocked transaction which could be used to found new channels. Heuristic 3 which used graph overlap or multi-input timelocked transactions provided 12\% on mainnet, and 24\% on the testnet, of the total connections found using both heuristic two and three.
 
 \begin{table}[ht]
 \centering
@@ -180,15 +180,14 @@ Our two other heuristics was also used on these channel sets, allowing us to det
 \end{tabular}
 \end{table}
 
-If we combine our results using all three heuristics on the the channel sets, we get a total of 4 436 relations between the channel graphs in the mainnet. This enabled us to crate 2 182 links between channels. The reason this this difference is redundancy in the connections and key reuse within a single channel graph. This means that 2254 of our relations, or about 50\% where redundant, with 72 of them being reuse of the same key in the same channel graph. The set of linked channels can be seen visualized in \cref{fig:cg_mainnet_full}, where we have created a channel network as discussed in \cref{sec:linking}. The network consists of 2 324 smaller components, with each node having a average degree of 1.1. While this graph does not distinguish users, we can based on how these components is structured reveal additional information about the users participating in the channels. 
-As edges represent at least one common user being present both nodes, we can create the property: for adjacent nodes there can be at most three different users, and minimum two users. This means if the distance between vertices is more than one, we can no longer be sure if if there is common user participation, but we cannot rule it out either. More importantly, it has a impact on complete components-i.e., every node is connected to every other node. Because the property we defined must hold for every node in such a complete component, there are only two possibilities with regards to user participation: there can be at most three total users in the component, or that one user participates in all nodes, but with a different second user in each. 
+If we combine our results of using all three heuristics on the channel sets, we get a total of 4 436 relations between the channel graphs in the mainnet. This enabled us to crate 2 182 links between channels. The reason this this difference is redundancy for the connections, and key reuse within a single channel graph. This means that 2254 of our relations, or about 50\% where redundant, but only 36 of them being reuse of the same key in the same channel graph. The set of linked channels can be seen visualized in \cref{fig:cg_mainnet_full}, were we have created a channel network as discussed in \cref{sec:linking}. The network consists of 2 324 smaller components, with each node having a average degree of 1.1. While this graph does not distinguish users, we can based on how these components is structured reveal additional information about the users participating in the channels. 
+As edges represent at least one common user being present both nodes, we can create the property: for adjacent nodes there can be at most three different users, and minimum two users. This means if the distance between vertices is more than one, we can no longer be sure if if there is common user participation, but we cannot rule it out either. More importantly, it has a impact on complete components-i.e., every node is connected to every other node. Because the property we defined must hold for every node in such a complete component, there are only two possibilities with regard to user participation: there can be at most three total users in the component, or that one user participates in all nodes, but with a different second user in each. 
 So either there are three total users in such a component, or the number of nodes plus one total users, because each node has a different user plus the one participating in all.
-We can see a few examples of such components in \cref{fig:cg_mainnet_full}, and also some components having a similar structure, but also having some additional nodes which is not part of this highly connected core.
+We can see a few examples of such components in \cref{fig:cg_mainnet_full}, and also some components having a similar structure, but having some additional nodes which is not part of the complete core of the component.
 \\
 
-
-We also did the same as discussed in the previous paragraph for the set of channel graphs from the testnet. The total relations using all three herusitcs was 12 955, while the amount of links we could create was 7084. Again 45\% of the connections we found where redundant for actually linking the channels. Here the number of reused keys within a single channel graph was 226.
-The channel network shown in \cref{fig:cg_testnet_full} is more connected than the mainnet in \cref{fig:cg_mainnet_full}, with the testnet network having over twice as many nodes, but both having between 2 000 and 3 000 components. We can see this difference clearly with the large component in the middle of the testnet graph. As the LN is one network, it should consist of one dynamic component, so a historic network graph should also ideally have one large component. While we can see this beginning to emerge in our testnet channel network, it is very clear in the channel network constructed using LN data as seen in \cref{fig:channel_network_LN_mainent}.
+We did the same as discussed in the previous paragraph for the set of channel graphs from the testnet. The total relations using all three herusitcs was 12 955, while the amount of links we could create was 7084. Again 45\% of the connections we found where redundant for actually linking the channels. Here the number of reused keys within a single channel graph was 113, which is relatively small compared to the 5758 other redundant relations.
+The channel network shown in \cref{fig:cg_testnet_full} is more connected than the mainnet in \cref{fig:cg_mainnet_full}, with the testnet network having over twice as many nodes, but only having 617 more components. We can see this difference clearly with the large component in the middle of the testnet graph. As the LN is one network, it should consist of one dynamic component, meaning a historic network graph should also ideally have one large component. While we can see this beginning to emerge in our testnet channel network, it is very clear in the channel network constructed using LN data as seen in \cref{fig:channel_network_LN_mainent}.
 \\
 
 \begin{figure}[ht]
@@ -198,31 +197,47 @@ The channel network shown in \cref{fig:cg_testnet_full} is more connected than t
     \label{fig:cg_mainnet_full}
 \end{figure}
 
-
-The channel network in \cref{fig:channel_network_LN_mainent} based on LN data, was created so we could compare it with the networks we crated based on linking blockchain information. In the LN data we collected in the intervals we used the node id, which identifies a node/user, to link the channels that nodes participated in. While users are easily separable by this id, we ignored this to create the same type of network as we did using the blockchain data, meaning edges only indicate common user participation, not a specified user. 
-As shown in \cref{fig:channel_network_LN_mainent} the network is highly connected with the 715 nodes having a average degree of 58. We can see that almost all nodes part of the main component, with some nodes in the center having a very high degree.
-If we compare this to the channel network in \cref{fig:channel_network_BC_mainnet}, which we cratered using the channels identified on the blockchain in the same interval, and linked using our three heuristics, we can see how limited our linking capabilities really are.
+The channel network in \cref{fig:channel_network_LN_mainent} based on LN data from interval 1, was created so we could compare it with the networks we crated by linking blockchain information. This would allow us to see how connected a channel network should ideally be if all relations where available to us in the blockchain. In the LN data we collected during the intervals we used the node id, which identifies a node/user, to link the channels that nodes participated in. While users are easily separable by this id, we ignored this to create the same type of network as we did using the blockchain data, meaning edges only indicate common user participation, not a specified user. 
+As shown in \cref{fig:channel_network_LN_mainent} the network is highly connected with the 715 nodes having a average degree of 58. We can see that almost all nodes are a part of the main component, with only having 6 nodes not being connected to it.
+\cref{fig:histogram} shows the histogram for the node degrees in this network. In this histogram there is one node that sticks out, it has a degree of over 200, compared to the other highly connected nodes which have a degree of around 150. There is also a high frequency of nodes having a degree between 100 and 150. In \cref{centrality_table} we have taken the top five nodes in terms of degree, and calculated some centrality measures for them. The highest connected node with a degree of 239, has also the highest score in the other measures, it can be seen in \cref{fig:channel_network_LN_mainent} as the red node. For the other nodes there is some variation in the scores, but all five nodes being in the top ten for all nodes in every measure, except node or channel 569069835159470080 colored blue in \cref{fig:channel_network_LN_mainent}. For closeness centrality this node was ranked 31, while scoring high on degree and betweenness centrality. 
+Comparing this network to the channel network in \cref{fig:channel_network_BC_mainnet}, which we cratered using the channels identified on the blockchain in the same interval, and linked using our three heuristics, we can see how limited our linking capabilities really are.
+Having almost six times as many nodes as edges and a average degree of 0.1, we can see how most channels identified has no relation to others we could find, within such a short interval.
+The same networks for the testnet interval and the second interval for mainnet can be found in the \cref{appendix_networks}
 
 \begin{figure}[ht]
     \centering
-    \includegraphics[width=13cm]{figures/graphs/cg_bc_testnet_full.png}
+    \includegraphics[width=14cm]{figures/graphs/cg_bc_testnet_full.png}
     \caption{Channel network for testnet}
     \label{fig:cg_testnet_full}
 \end{figure}
 
 \begin{figure}[ht]
     \centering
-    \includegraphics[width=13cm]{figures/graphs/cg_ln_mainnet_run1.png}
+    \includegraphics[width=14cm]{figures/graphs/cg_ln_mainnet_run1.png}
     \caption{Linked channels from the LN, mainnet, first interval}
     \label{fig:channel_network_LN_mainent}
 \end{figure}
 
 \begin{figure}[ht]
     \centering
-    \includegraphics[width=13cm]{figures/graphs/histogram.png}
-    \caption{Historogram of node degree for the network in \cref{fig:channel_network_LN_mainent}}
+    \includegraphics[width=17cm]{figures/graphs/histogram_ln_mainnet_run1.png}
+    \caption{Histogram of node degree for the network in \cref{fig:channel_network_LN_mainent}}
     \label{fig:histogram}
 \end{figure}
+
+\begin{table}[ht]
+\centering
+\caption{Centrality measures for the highest degree nodes for the network in \cref{fig:channel_network_LN_mainent}}
+\label{centrality_table}
+\begin{tabular}{l|c|c|c}
+ \textbf{(short) Channel Id}     & \textbf{Degree centrality} & \textbf{Closeness centrality} & \textbf{Betweenness centrality} \\ \hline
+\textbf{565863659278368768} &  239 & 0.0001790831 &  23084.374         \\ \hline
+\textbf{565758106242187265} &  176 & 0.0001743679 &  10285.468            \\ \hline
+\textbf{569069835159470080} &  159 & 0.0001737619 &  11597.068                                 \\ \hline
+\textbf{566469490153553920} &  153 & 0.0001763668 &  5733.209                               \\ \hline
+\textbf{567496434090377216} &  152 & 0.0001756543 &  6881.286                               \\ \hline
+\end{tabular}
+\end{table}
 
 \begin{figure}[ht]
     \centering

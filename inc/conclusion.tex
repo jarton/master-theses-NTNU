@@ -11,7 +11,7 @@ While this information might allow for us to determine some of the structure of 
 
 % identification
 Our results also show some possibilities. In our second interval comparing the channels found with our two methods of identification, and channels collected trough the LN, we see that possibly more than 75\% of all 2of2 multisig transactions is in fact LN channels. This was due to the possible limits of our LN node to collect all channels, as other nodes will remove inactive channels and they will therefore not be propagated. This might become apparent if one where to use longer collection intervals, or run the collection node longer before starting to collect, allowing the node to receive many channels will eventually be pruned by other nodes.
-The timelocked identification provides a good middle ground between precision and how many channels it will be able to find, with the results from the second interval indicating that around 25\% of channels is unilaterally closed. As shown in our correlation between P2WSH outputs and number of channels on the LN, the P2WSH outputs can be used as an indicator of the number of channels, but at least providing a upper limit on active channels at any point in time. It is important to note however that these things are very reliant on the current use cases of the things used for identification and correlation. For example, if 2of2 multisig is used commonly for other things than LN channels, identification based on it will become extremely unreliable. 
+The timelocked identification provides a good middle ground between precision and how many channels it will be able to find, with the results from the second interval indicating that around 25\% of channels is unilaterally closed. As shown in our correlation between {\tt P2WSH} outputs and number of channels on the LN, the {\tt P2WSH} outputs can be used as an indicator of the number of channels, but at least providing a upper limit on active channels at any point in time. It is important to note however that these things are very reliant on the current use cases of the things used for identification and correlation. For example, if 2of2 multisig is used commonly for other things than LN channels, identification based on it will become extremely unreliable. 
 \\
 
 
@@ -31,6 +31,10 @@ As a emerging technology the LN and Bitcoin system is being changed and improved
 A example is founding transactions: currently founding transactions can be used to found a single channel, but there is nothing in the way of having a single founding transaction for many channels \cite{multi_channel_founding}.
 This would provide additional possibilities for linking.
 It could also be used for identification of channels-e.g., one channel might be identified because of a timelocked output, and by finding ouputs of other channels in the founding transaction we can also identify them.
+\\
+
+Using HTLC transactions to identify on-chain LN transactions are something that could be explored further. In \cref{sec:fullrun} we presented our result of checking their frequency, and overlap with already found channel graph. Using such a identification method would have given us 62 more channels for the mainnet and 143 for the testnet. Nevertheless, the extra transactions included in a channel graph can provide more opportunities for linking. The scrips for HTLC transactions should also be explored further, to determine the value of the data within them.
+The preimage {\tt R} is unique for one off-chain transaction, making it a possible element to use for getting information about off-chain transactions.
 \\
 
 One of the proposed improvements that will impact this type of work the most is channel factories \cite{burchert2017scalable}.
