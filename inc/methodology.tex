@@ -85,7 +85,7 @@ In the byte version the second vector is 33, which indicates how many bytes to p
 When using 2of2 multisig redeem scripts, which also entails using {\tt P2WSH} for identifying potential channels, our result will contain all actual LN channels, but likely also many that are not. The effectiveness of this will depend on the current use-cases for 2of2 multisig transactions besides on-chain LN transactions, and how common these are. To determine the current effectiveness of this method, we will compare data from the blockchain with data gathered through the LN, and with results from our other method. This will allow us to quantify the actual number of channels identified using this method, compared to the amount of false positives.
 The \cref{sec:ln_analysis} will contain a more in-depth discussion of this.
 
-\subsection{Identification using timelocked outputs}
+\subsection{Identification using timelocked redeem scripts}
 \label{timelocked_identification}
 
 The main method for idenifying channels we have used in this project, relies on timelocked redeem scripts.
@@ -225,7 +225,7 @@ As mentioned when explaining the script, and described in \cref{subsec:htlcln}, 
 
 
 
-\subsection{Non implicit LN information on the blockchain}
+\subsection{LN information on the blockchain}
 \label{subsec:information_ln}
 % how other information gathered. output types so on.
 
@@ -257,7 +257,7 @@ by counting all {\tt P2WSH} outputs and subtracting the spent ones up to a heigh
 While this might not be accurate in terms of actual number of channels (size) for the LN, it will give us a concrete upper limit to its size, both current and at any point in the past.
 We can also use LN data to correlate between the number of unspent {\tt P2WSH} outputs and open channels in the LN at different points in time. Which will indicate how closely the number {\tt P2WSH} outputs reflects the number of LN channels.
 
-\section{Lightning network data collection}
+\section{Lightning Network data collection}
 \label{sec:ln_analysis}
 
 % lnd introduction
